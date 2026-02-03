@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">Shop Wallet</string>
+
+    <!-- Home Screen -->
+    <string name="label_brand">Shop</string>
+    <string name="label_wallet">Wallet</string>
+    <string name="label_cart">Cart</string>
+    <string name="label_history">History</string>
+
+
+
+
+    <!-- Common Actions & Errors -->
+    <string name="action_retry">Réessayer</string>
+    <string name="action_back">Retour</string>
+    <string name="action_close">Fermer</string>
+    <string name="action_next">Suivant</string>
+    <string name="action_previous">Précédent</string>
+    <string name="error_generic">Une erreur est survenue</string>
+    <string name="error_unknown">Erreur inconnue</string>
+    <string name="error_download_failed">Erreur de téléchargement</string>
+    <string name="error_link_not_found">Lien non trouvé</string>
+    <string name="error_cannot_open_platform">Impossible d’ouvrir %1$s</string>
+    <string name="content_description_logo">Logo de l'application</string>
+    <string name="label_facebook">Facebook</string>
+    <string name="label_tiktok">TikTok</string>
+    <string name="label_instagram">Instagram</string>
+    <string name="label_youtube">YouTube</string>
+    <string name="label_maps">Google Maps</string>
+    <string name="current_language_name">Français</string>
+    <string name="msg_exit_confirmation">Appuyez encore pour quitter</string>
+    <string name="title_delete_confirmation">Confirmer la suppression</string>
+    <string name="msg_delete_confirmation">Êtes-vous sûr de cette suppression ? Cette action est irréversible.</string>
+</resources>
