@@ -85,7 +85,7 @@ fun AuthScreen(
                     phoneNumber = phoneNumber,
                     onPhoneChange = { phoneNumber = it },
                     onContinue = {
-                        if (phoneNumber.length >= 10) {
+                        if (phoneNumber.length == 8) {
                             step = AuthStep.OTP
                         }
                     }
@@ -131,8 +131,8 @@ fun PhoneInputStep(
         Spacer(modifier = Modifier.height(8.dp))
         ShopInput(
             value = phoneNumber,
-            onValueChange = { if (it.all { char -> char.isDigit() }) onPhoneChange(it) },
-            placeholder = "+1 (555) 000-0000",
+            onValueChange = { if (it.length <= 8 && it.all { char -> char.isDigit() }) onPhoneChange(it) },
+            placeholder = "+257 00 000 000",
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
             modifier = Modifier.height(56.dp) // h-12 = 48px, but inputs are usually comfy at 56
         )
@@ -140,7 +140,7 @@ fun PhoneInputStep(
         ShopButton(
             onClick = onContinue,
             modifier = Modifier.fillMaxWidth().height(48.dp),
-            enabled = phoneNumber.length >= 10
+            enabled = phoneNumber.length == 8
         ) {
             Text("Continue")
         }

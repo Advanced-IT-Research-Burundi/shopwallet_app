@@ -25,27 +25,22 @@ val OutlineLight = Color(0xFFE5E7EB)
 val SurfaceVariantLight = Color(0xFFF5F5F5) // Muted
 val OnSurfaceVariantLight = Color(0xFF6B7280) // Muted Foreground
 
-// Dark Colors (Approximated from oklch values in CSS or standard mapping)
-// CSS: --background: oklch(0.145 0 0) -> Very Dark Grey almost Black
-// CSS: --foreground: oklch(0.985 0 0) -> White
-// CSS: --primary: oklch(0.985 0 0) -> White (In dark mode, primary is white in the CSS)
-// CSS: --primary-foreground: oklch(0.205 0 0) -> Dark Grey
+// Dark Colors - "Lively" Dark Theme (Rich Slate/Midnight Blue tones)
+val BackgroundDark = Color(0xFF0F172A) // Slate 900 - Deep rich blue-grey
+val OnBackgroundDark = Color(0xFFF8FAFC) // Slate 50
 
-val BackgroundDark = Color(0xFF1A1A1A) // Approx for oklch(0.145 0 0)
-val OnBackgroundDark = Color(0xFFFCFCFC)
+val SurfaceDark = Color(0xFF1E293B) // Slate 800 - Lighter slate for cards/surfaces
+val OnSurfaceDark = Color(0xFFF8FAFC)
 
-val SurfaceDark = Color(0xFF1A1A1A)
-val OnSurfaceDark = Color(0xFFFCFCFC)
+val PrimaryDark = Color(0xFF38BDF8) // Sky 400 - Vibrant blue that pops on dark
+val OnPrimaryDark = Color(0xFF0F172A)
 
-val PrimaryDark = Color(0xFFFFFFFF) // CSS maps primary to white in dark mode
-val OnPrimaryDark = Color(0xFF333333)
-
-val SecondaryDark = Color(0xFF444444) // Approx
-val OnSecondaryDark = Color(0xFFFCFCFC)
+val SecondaryDark = Color(0xFF334155) // Slate 700
+val OnSecondaryDark = Color(0xFFF8FAFC)
 
 val ErrorDark = Color(0xFFEF4444)
 val OnErrorDark = Color(0xFFFFFFFF)
 
-val OutlineDark = Color(0xFF444444)
-val SurfaceVariantDark = Color(0xFF444444)
-val OnSurfaceVariantDark = Color(0xFFAAAAAA)
+val OutlineDark = Color(0xFF334155) // Slate 700
+val SurfaceVariantDark = Color(0xFF1E293B)
+val OnSurfaceVariantDark = Color(0xFF94A3B8) // Slate 400
