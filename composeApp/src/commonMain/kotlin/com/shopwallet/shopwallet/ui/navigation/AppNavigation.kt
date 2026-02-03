@@ -1,9 +1,11 @@
 package com.shopwallet.shopwallet.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.shopwallet.shopwallet.ui.auth.AuthScreen
 import com.shopwallet.shopwallet.ui.screens.BrandScreen
 import com.shopwallet.shopwallet.ui.screens.CartScreen
@@ -22,6 +24,24 @@ fun AppNavigation(
   navController: NavHostController,
   onExit: () -> Unit
 ) {
+
+  val navBackStackEntry by navController.currentBackStackEntryAsState()
+  val currentRoute = navBackStackEntry?.destination?.route
+
+  val bottomBar: @Composable () -> Unit = {
+    BottomNavBar(
+      selectedRoute = currentRoute,
+      onItemSelected = { screen ->
+        navController.navigate(screen.route) {
+          popUpTo(Screen.Brand.route) {
+            saveState = true
+          }
+          launchSingleTop = true
+          restoreState = true
+        }
+      }
+    )
+  }
 
   NavHost(
     navController = navController,
@@ -43,7 +63,8 @@ fun AppNavigation(
       MainScaffold(
         title = stringResource(Res.string.label_brand),
         showBackButton = true,
-        onBackClick = { navController.popBackStack() }
+        onBackClick = { navController.popBackStack() },
+        bottomBar = bottomBar
       ) {
         BrandScreen()
       }
@@ -52,7 +73,8 @@ fun AppNavigation(
       MainScaffold(
         title = stringResource(Res.string.label_wallet),
         showBackButton = true,
-        onBackClick = { navController.popBackStack() }
+        onBackClick = { navController.popBackStack() },
+        bottomBar = bottomBar
       ) {
         WalletScreen()
       }
@@ -61,7 +83,8 @@ fun AppNavigation(
       MainScaffold(
         title = stringResource(Res.string.label_cart),
         showBackButton = true,
-        onBackClick = { navController.popBackStack() }
+        onBackClick = { navController.popBackStack() },
+        bottomBar = bottomBar
       ) {
         CartScreen()
       }
@@ -70,7 +93,8 @@ fun AppNavigation(
       MainScaffold(
         title = stringResource(Res.string.label_history),
         showBackButton = true,
-        onBackClick = { navController.popBackStack() }
+        onBackClick = { navController.popBackStack() },
+        bottomBar = bottomBar
       ) {
         HistoryScreen()
       }
