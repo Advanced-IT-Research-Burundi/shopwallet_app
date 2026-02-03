@@ -1,4 +1,4 @@
-package org.awala.awala.presentation.components
+package com.shopwallet.shopwallet.ui.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.Color
 
 
 @Composable
-fun AwalaLoadingDots(color: Color? = MaterialTheme.colorScheme.primary) {
+fun LoadingDots(color: Color? = MaterialTheme.colorScheme.primary) {
   val infiniteTransition = rememberInfiniteTransition()
   val dot1 = infiniteTransition.animateFloat(
     initialValue = 0f,

@@ -1,4 +1,4 @@
-package org.awala.awala.presentation.components
+package com.shopwallet.shopwallet.ui.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,14 +22,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import org.awala.awala.models.Place
 
 @Composable
-fun AwalaTextField(
+fun MyTextField(
   value: String,
   onValueChange: (String) -> Unit,
-  onPlaceChange: (Place) -> Unit = {},
-  isLocation: Boolean = false,
   label: String,
   placeholder: String,
   leadingIcon: ImageVector? = null,
@@ -51,15 +48,6 @@ fun AwalaTextField(
       value = value,
       onValueChange = { newText ->
         onValueChange(newText)
-        if (isLocation) {
-          val place = Place(
-            title = newText,
-            subTitle = "Unknown",
-            lat = 0.0,
-            lng = 0.0
-          )
-          onPlaceChange(place)
-        }
       },
       placeholder = { Text(placeholder) },
 

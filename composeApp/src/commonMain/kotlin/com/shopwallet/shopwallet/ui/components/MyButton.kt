@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.shopwallet.shopwallet.ui.components.LoadingDots
 
 @Composable
 fun PrimaryButton(
@@ -65,7 +66,7 @@ fun PrimaryButton(
         )
       }
       when {
-        loading -> AwalaLoadingDots(color = colors.onPrimary)
+        loading -> LoadingDots(color = colors.onPrimary)
         else ->
           Text(
             text = text,
@@ -110,7 +111,7 @@ fun SecondaryButton(
         Icon(it, text,Modifier.size(16.dp))
       }
       when {
-        loading -> AwalaLoadingDots()
+        loading -> LoadingDots()
         else ->
           Text(
             text = text,
@@ -214,7 +215,7 @@ fun SmallButton(
         )
       }
       when {
-        loading -> AwalaLoadingDots(color = colors.primary)
+        loading -> LoadingDots(color = colors.primary)
         else ->
           Text(
             text = text,
