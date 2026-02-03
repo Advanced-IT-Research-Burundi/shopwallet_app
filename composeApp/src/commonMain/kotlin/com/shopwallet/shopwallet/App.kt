@@ -10,9 +10,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.shopwallet.shopwallet.ui.auth.AuthScreen
 
+import com.shopwallet.shopwallet.ui.theme.ShopWalletTheme
+
 @Composable
 fun App() {
-  MaterialTheme {
+  ShopWalletTheme {
     val navController = rememberNavController()
 
     NavHost(
