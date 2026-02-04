@@ -62,7 +62,7 @@ import com.shopwallet.shopwallet.utils.CurrencyFormat
 import com.shopwallet.shopwallet.ui.components.ShopInput
 
 @Composable
-fun BrandScreen(brand: Brand, onAddToCart: (Product) -> Unit) {
+fun BrandScreen(brand: Brand, onAddToCart: (Product) -> Unit, onProductClick: (String) -> Unit) {
   var selectedCategory by remember(brand.id) { mutableStateOf("all") }
   var searchQuery by remember(brand.id) { mutableStateOf("") }
 
@@ -158,6 +158,7 @@ fun BrandScreen(brand: Brand, onAddToCart: (Product) -> Unit) {
           ProductCard(
             product = product,
             onAddToCart = { onAddToCart(product) },
+            onClick = { onProductClick(product.id) },
             modifier = Modifier.padding(start = startPadding, end = endPadding)
           )
         }
@@ -324,12 +325,13 @@ fun CategoryChip(
 fun ProductCard(
     product: Product,
     onAddToCart: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
   Card(
     modifier = modifier
       .fillMaxWidth()
-      .clickable { /* TODO: Navigate to details */ },
+      .clickable { onClick() },
     shape = RoundedCornerShape(16.dp),
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)

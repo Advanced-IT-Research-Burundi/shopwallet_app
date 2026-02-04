@@ -62,6 +62,7 @@ fun MainScreen() {
   ) { mutableStateOf<BottomNavScreen>(BottomNavScreen.Brand) }
 
   var selectedBrand by remember { mutableStateOf<Brand?>(null) }
+  var selectedProductId by remember { mutableStateOf<String?>(null) }
   var cartItems by remember(selectedBrand?.id) { mutableStateOf(listOf<CartItem>()) }
 
   val addToCartValue: (Product) -> Unit = { product ->
@@ -89,16 +90,19 @@ fun MainScreen() {
     }
   }
 
+  val isProductSelected = selectedProductId != null
   val isBrandSelected = selectedBrand != null
 
-  val title = if (isBrandSelected) selectedBrand!!.name else "ShopWallet"
+  val title = if (isProductSelected) "Product Details" else if (isBrandSelected) selectedBrand!!.name else "ShopWallet"
 
   Box(modifier = Modifier.fillMaxSize()) {
     MainScaffold(
       title = title,
-      showBackButton = isBrandSelected,
+      showBackButton = isBrandSelected || isProductSelected,
       onBackClick = {
-          if (selectedTab != BottomNavScreen.Brand) {
+          if (selectedProductId != null) {
+              selectedProductId = null
+          } else if (selectedTab != BottomNavScreen.Brand) {
               selectedTab = BottomNavScreen.Brand
           } else {
               selectedBrand = null
@@ -117,16 +121,28 @@ fun MainScreen() {
         BrandsGrid(onBrandClick = { selectedBrand = it })
       } else {
         ShopWalletTheme(brandColor = selectedBrand?.primaryColor?.toColor()) {
-            when (selectedTab) {
-                BottomNavScreen.Brand -> BrandScreen(brand = selectedBrand!!, onAddToCart = addToCartValue)
-                BottomNavScreen.Wallet -> WalletScreen(brand = selectedBrand!!)
-                BottomNavScreen.Cart -> CartScreen(
-                  cartItems = cartItems, 
-                  walletBalance = 124500.50,
-                  onRemoveItem = removeFromCartValue,
-                  onUpdateQuantity = updateCartQuantityValue
+            if (selectedProductId != null) {
+                ProductDetailsScreen(
+                    productId = selectedProductId!!,
+                    onAddToCart = addToCartValue,
+                    onBack = { selectedProductId = null }
                 )
-                BottomNavScreen.History -> HistoryScreen()
+            } else {
+                when (selectedTab) {
+                    BottomNavScreen.Brand -> BrandScreen(
+                        brand = selectedBrand!!, 
+                        onAddToCart = addToCartValue,
+                        onProductClick = { selectedProductId = it }
+                    )
+                    BottomNavScreen.Wallet -> WalletScreen(brand = selectedBrand!!)
+                    BottomNavScreen.Cart -> CartScreen(
+                      cartItems = cartItems, 
+                      walletBalance = 124500.50,
+                      onRemoveItem = removeFromCartValue,
+                      onUpdateQuantity = updateCartQuantityValue
+                    )
+                    BottomNavScreen.History -> HistoryScreen()
+                }
             }
         }
       }
