@@ -57,10 +57,11 @@ import coil3.compose.AsyncImage
 import com.shopwallet.shopwallet.data.categories
 import com.shopwallet.shopwallet.data.model.Brand
 import com.shopwallet.shopwallet.data.products
+import com.shopwallet.shopwallet.data.model.Product
 import com.shopwallet.shopwallet.ui.components.ShopInput
 
 @Composable
-fun BrandScreen(brand: Brand) {
+fun BrandScreen(brand: Brand, onAddToCart: (Product) -> Unit) {
   var selectedCategory by remember(brand.id) { mutableStateOf("all") }
   var searchQuery by remember(brand.id) { mutableStateOf("") }
 
@@ -154,11 +155,8 @@ fun BrandScreen(brand: Brand) {
           val endPadding = if (index % 2 == 0) 8.dp else 16.dp
 
           ProductCard(
-            name = product.name,
-            description = product.description,
-            price = product.price,
-            image = product.image,
-            onAddToCart = { /* TODO */ },
+            product = product,
+            onAddToCart = { onAddToCart(product) },
             modifier = Modifier.padding(start = startPadding, end = endPadding)
           )
         }
@@ -323,10 +321,7 @@ fun CategoryChip(
 
 @Composable
 fun ProductCard(
-    name: String,
-    description: String,
-    price: Double,
-    image: String,
+    product: Product,
     onAddToCart: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -346,8 +341,8 @@ fun ProductCard(
         .aspectRatio(1f) // Square aspect ratio
     ) {
       AsyncImage(
-        model = image,
-        contentDescription = name,
+        model = product.image,
+        contentDescription = product.name,
         contentScale = ContentScale.Crop,
         modifier = Modifier.fillMaxSize()
       )
@@ -373,7 +368,7 @@ fun ProductCard(
       // Content
       Column(modifier = Modifier.padding(12.dp)) {
         Text(
-          text = name,
+          text = product.name,
           style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
           maxLines = 1,
           overflow = TextOverflow.Ellipsis
@@ -382,7 +377,7 @@ fun ProductCard(
         Spacer(modifier = Modifier.height(4.dp))
         
         Text(
-          text = description,
+          text = product.description,
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
           maxLines = 1,
@@ -397,7 +392,7 @@ fun ProductCard(
           verticalAlignment = Alignment.CenterVertically
         ) {
           Text(
-            text = "$$price",
+            text = "$${product.price}",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.primary
           )

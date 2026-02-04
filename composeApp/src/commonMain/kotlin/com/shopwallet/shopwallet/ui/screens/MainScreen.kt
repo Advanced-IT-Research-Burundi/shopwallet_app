@@ -37,6 +37,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.shopwallet.shopwallet.data.brands
 import com.shopwallet.shopwallet.data.model.Brand
+import com.shopwallet.shopwallet.data.model.CartItem
+import com.shopwallet.shopwallet.data.model.Product
 import com.shopwallet.shopwallet.ui.navigation.BottomNavBar
 import com.shopwallet.shopwallet.ui.navigation.BottomNavScreen
 import com.shopwallet.shopwallet.ui.navigation.MainScaffold
@@ -61,6 +63,19 @@ fun MainScreen() {
   ) { mutableStateOf<BottomNavScreen>(BottomNavScreen.Brand) }
 
   var selectedBrand by remember { mutableStateOf<Brand?>(null) }
+  var cartItems by remember(selectedBrand?.id) { mutableStateOf(listOf<CartItem>()) }
+
+  val addToCartValue: (Product) -> Unit = { product ->
+    val existingItem = cartItems.find { it.product.id == product.id }
+    if (existingItem != null) {
+      cartItems = cartItems.map {
+        if (it.product.id == product.id) it.copy(quantity = it.quantity + 1) else it
+      }
+    } else {
+      cartItems = cartItems + CartItem(product)
+    }
+  }
+
   val isBrandSelected = selectedBrand != null
 
   val title = if (isBrandSelected) selectedBrand!!.name else "ShopWallet"
@@ -90,9 +105,9 @@ fun MainScreen() {
       } else {
         ShopWalletTheme(brandColor = selectedBrand?.primaryColor?.toColor()) {
             when (selectedTab) {
-                BottomNavScreen.Brand -> BrandScreen(brand = selectedBrand!!)
+                BottomNavScreen.Brand -> BrandScreen(brand = selectedBrand!!, onAddToCart = addToCartValue)
                 BottomNavScreen.Wallet -> WalletScreen(brand = selectedBrand!!)
-                BottomNavScreen.Cart -> CartScreen()
+                BottomNavScreen.Cart -> CartScreen(cartItems = cartItems)
                 BottomNavScreen.History -> HistoryScreen()
             }
         }
