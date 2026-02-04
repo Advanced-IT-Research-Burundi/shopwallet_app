@@ -185,8 +185,8 @@ fun WalletDashboardHeader(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Top Up Button
-                    
+                    // Top Up Button hidden to be reactivated later with the logic
+                    /*
                     Button(
                         onClick = onTopUpClick,
                         modifier = Modifier.height(40.dp),
@@ -208,7 +208,7 @@ fun WalletDashboardHeader(
                             "Top Up",
                             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                         )
-                    }
+                    }*/
                 }
 
                 // Brand Indicator
