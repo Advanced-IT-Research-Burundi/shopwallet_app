@@ -139,7 +139,8 @@ fun MainScreen() {
                       cartItems = cartItems, 
                       walletBalance = 124500.50,
                       onRemoveItem = removeFromCartValue,
-                      onUpdateQuantity = updateCartQuantityValue
+                      onUpdateQuantity = updateCartQuantityValue,
+                      onProductClick = { selectedProductId = it }
                     )
                     BottomNavScreen.History -> HistoryScreen()
                 }

@@ -1,6 +1,7 @@
 package com.shopwallet.shopwallet.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -32,7 +33,8 @@ fun CartScreen(
     cartItems: List<CartItem>, 
     walletBalance: Double,
     onRemoveItem: (String) -> Unit,
-    onUpdateQuantity: (String, Int) -> Unit
+    onUpdateQuantity: (String, Int) -> Unit,
+    onProductClick: (String) -> Unit
 ) {
   Column(
     modifier = Modifier
@@ -42,7 +44,7 @@ fun CartScreen(
     if (cartItems.isEmpty()) {
       EmptyCartView()
     } else {
-      CartContent(cartItems, walletBalance, onRemoveItem, onUpdateQuantity)
+      CartContent(cartItems, walletBalance, onRemoveItem, onUpdateQuantity, onProductClick)
     }
   }
 }
@@ -80,7 +82,8 @@ fun CartContent(
     cartItems: List<CartItem>, 
     walletBalance: Double,
     onRemoveItem: (String) -> Unit,
-    onUpdateQuantity: (String, Int) -> Unit
+    onUpdateQuantity: (String, Int) -> Unit,
+    onProductClick: (String) -> Unit
 ) {
   val subtotal = cartItems.sumOf { it.product.price * it.quantity }
   val tax = subtotal * 0.10
@@ -193,7 +196,8 @@ fun CartContent(
       CartItemRow(
           item = item,
           onRemove = { onRemoveItem(item.product.id) },
-          onUpdateQuantity = { qty -> onUpdateQuantity(item.product.id, qty) }
+          onUpdateQuantity = { qty -> onUpdateQuantity(item.product.id, qty) },
+          onProductClick = { onProductClick(item.product.id) }
       )
       if (index < cartItems.size - 1) {
         HorizontalDivider(
@@ -299,11 +303,13 @@ fun SummaryRow(label: String, value: String, isBold: Boolean = false, color: Col
 fun CartItemRow(
     item: CartItem,
     onRemove: () -> Unit,
-    onUpdateQuantity: (Int) -> Unit
+    onUpdateQuantity: (Int) -> Unit,
+    onProductClick: () -> Unit
 ) {
     Row(
       modifier = Modifier
         .fillMaxWidth()
+        .clickable(onClick = onProductClick)
         .padding(vertical = 8.dp),
       verticalAlignment = Alignment.CenterVertically
     ) {
