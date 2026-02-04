@@ -134,7 +134,7 @@ fun CartContent(cartItems: List<CartItem>, walletBalance: Double) {
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Text(
-                        text = if (isBeyondDebt) "Blocked" else "Pay Now",
+                        text = if (isBeyondDebt) "Blocked" else if (isInDebtMarge) "Use Credit" else "Pay Now",
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                     )
                 }
@@ -226,8 +226,36 @@ fun CartContent(cartItems: List<CartItem>, walletBalance: Double) {
                     color = if (isBeyondDebt) MaterialTheme.colorScheme.error else Color(0xFFEA580C)
                 )
             }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Final Checkout Button
+            Button(
+                onClick = { /* TODO */ },
+                enabled = !isBeyondDebt,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isBeyondDebt) MaterialTheme.colorScheme.error.copy(alpha = 0.1f) else MaterialTheme.colorScheme.primary,
+                    contentColor = if (isBeyondDebt) MaterialTheme.colorScheme.error else Color.White
+                ),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (isBeyondDebt) {
+                        Icon(Icons.Default.Error, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Text(
+                        text = if (isBeyondDebt) "Insufficient Funds" else if (isInDebtMarge) "Pay with Credit" else "Confirm Purchase",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+            }
         }
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(64.dp))
     }
   }
 }

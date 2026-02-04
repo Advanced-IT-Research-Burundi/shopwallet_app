@@ -37,7 +37,7 @@ val products = listOf(
     brandId = "1",
     name = "Premium Cotton T-Shirt",
     description = "High-quality cotton t-shirt with modern fit",
-    price = 29.99,
+    price = 25000.00,
     category = "clothing",
     image = "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500"
   ),
