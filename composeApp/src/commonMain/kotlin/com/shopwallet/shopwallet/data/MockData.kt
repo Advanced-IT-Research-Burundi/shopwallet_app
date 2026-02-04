@@ -23,11 +23,10 @@ val brands = listOf(
 )
 
 val categories = listOf(
-  Category("all", "All"),
-    Category("clothing", "Clothing"),
-    Category("shoes", "Shoes"),
-    Category("accessories", "Accessories"),
-    Category("electronics", "Electronics")
+    Category("clothing", "Clothing", "1"),
+    Category("shoes", "Shoes", "1"),
+    Category("accessories", "Accessories", "1"),
+    Category("electronics", "Electronics", "2")
 )
 
 val products = listOf(

@@ -20,7 +20,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -58,14 +58,18 @@ import com.shopwallet.shopwallet.ui.components.ShopInput
 
 @Composable
 fun BrandScreen(brand: Brand) {
-  var selectedCategory by remember { mutableStateOf("all") }
-  var searchQuery by remember { mutableStateOf("") }
+  var selectedCategory by remember(brand.id) { mutableStateOf("all") }
+  var searchQuery by remember(brand.id) { mutableStateOf("") }
 
   // Use the passed brand
   val currentBrand = brand
 
   val brandProducts = remember(currentBrand.id) {
     products.filter { it.brandId == currentBrand.id }
+  }
+
+  val brandCategories = remember(currentBrand.id) {
+    categories.filter { it.brandId == currentBrand.id }
   }
 
   val filteredProducts by remember(selectedCategory, searchQuery) {
@@ -90,12 +94,12 @@ fun BrandScreen(brand: Brand) {
         .background(MaterialTheme.colorScheme.background)
     ) {
       // 1. BRAND HEADER SECTION
-      item(span = { GridItemSpan(2) }) {
+      item(key = "brand_header", span = { GridItemSpan(2) }, contentType = "header") {
         BrandHeader(currentBrand)
       }
 
         // 2. SEARCH & FILTER SECTION
-        item(span = { GridItemSpan(2) }) {
+        item(key = "search_filter", span = { GridItemSpan(2) }, contentType = "filter") {
           Column(
             modifier = Modifier
               .fillMaxWidth()
@@ -123,7 +127,14 @@ fun BrandScreen(brand: Brand) {
               horizontalArrangement = Arrangement.spacedBy(8.dp),
               modifier = Modifier.fillMaxWidth()
             ) {
-              items(categories) { category ->
+              item {
+                CategoryChip(
+                  name = "All",
+                  isSelected = selectedCategory == "all",
+                  onClick = { selectedCategory = "all" }
+                )
+              }
+              items(brandCategories) { category ->
                 CategoryChip(
                   name = category.name,
                   isSelected = selectedCategory == category.id,
@@ -136,7 +147,7 @@ fun BrandScreen(brand: Brand) {
 
         // 3. PRODUCT GRID
         if (filteredProducts.isEmpty()) {
-          item(span = { GridItemSpan(2) }) {
+          item(key = "empty_state", span = { GridItemSpan(2) }, contentType = "status") {
             Box(
               modifier = Modifier
                 .fillMaxWidth()
@@ -151,11 +162,11 @@ fun BrandScreen(brand: Brand) {
             }
           }
         } else {
-           items(
+           itemsIndexed(
              items = filteredProducts,
-             key = { it.id }
-           ) { product ->
-             val index = filteredProducts.indexOf(product)
+             key = { _, product -> product.id },
+             contentType = { _, _ -> "product" }
+           ) { index, product ->
              val startPadding = if (index % 2 == 0) 16.dp else 8.dp // index even
              val endPadding = if (index % 2 == 0) 8.dp else 16.dp // index odd
 
