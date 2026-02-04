@@ -40,6 +40,8 @@ import com.shopwallet.shopwallet.data.model.Brand
 import com.shopwallet.shopwallet.ui.navigation.BottomNavBar
 import com.shopwallet.shopwallet.ui.navigation.BottomNavScreen
 import com.shopwallet.shopwallet.ui.navigation.MainScaffold
+import com.shopwallet.shopwallet.ui.theme.ShopWalletTheme
+import com.shopwallet.shopwallet.ui.theme.toColor
 
 @Composable
 fun MainScreen() {
@@ -86,11 +88,13 @@ fun MainScreen() {
       if (!isBrandSelected) {
         BrandsGrid(onBrandClick = { selectedBrand = it })
       } else {
-        when (selectedTab) {
-            BottomNavScreen.Brand -> BrandScreen(brand = selectedBrand!!)
-            BottomNavScreen.Wallet -> WalletScreen(brand = selectedBrand!!)
-            BottomNavScreen.Cart -> CartScreen()
-            BottomNavScreen.History -> HistoryScreen()
+        ShopWalletTheme(brandColor = selectedBrand?.primaryColor?.toColor()) {
+            when (selectedTab) {
+                BottomNavScreen.Brand -> BrandScreen(brand = selectedBrand!!)
+                BottomNavScreen.Wallet -> WalletScreen(brand = selectedBrand!!)
+                BottomNavScreen.Cart -> CartScreen()
+                BottomNavScreen.History -> HistoryScreen()
+            }
         }
       }
     }

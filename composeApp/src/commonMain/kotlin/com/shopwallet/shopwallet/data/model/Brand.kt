@@ -6,4 +6,5 @@ data class Brand(
   val description: String,
   val logo: String,
   val coverImage: String,
+  val primaryColor: String = "#6200EE" // Default primary
 )

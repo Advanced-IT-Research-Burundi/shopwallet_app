@@ -12,14 +12,16 @@ val brands = listOf(
     description = "Premium fashion for the modern era",
     logo = "https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg",
     coverImage = "https://static.nike.com/a/images/f_auto/2e8d9338-b43d-4ef5-96e1-7fdcfd838f8e/image.jpg",
+    primaryColor = "#EA4B08" // Nike Orange/Red
   ),
-    Brand(
-        id = "2",
-        name = "Tech Haven",
-        description = "Latest gadgets and electronics",
-        logo = "https://example.com/logo2.png",
-        coverImage = "https://example.com/cover2.png",
-    )
+  Brand(
+    id = "2",
+    name = "Tech Haven",
+    description = "Latest gadgets and electronics",
+    logo = "https://example.com/logo2.png",
+    coverImage = "https://example.com/cover2.png",
+    primaryColor = "#0066FF" // Tech Blue
+  )
 )
 
 val categories = listOf(

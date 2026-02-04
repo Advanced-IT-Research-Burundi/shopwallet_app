@@ -71,3 +71,16 @@ fun ShopWalletTheme(
         )
     }
 }
+fun String.toColor(): Color {
+    return try {
+        val hex = this.removePrefix("#")
+        val longVal = hex.toLong(16)
+        if (hex.length == 6) {
+            Color(longVal or 0xFF000000)
+        } else {
+            Color(longVal)
+        }
+    } catch (e: Exception) {
+        Color.Gray
+    }
+}

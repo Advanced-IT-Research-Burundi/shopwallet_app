@@ -96,87 +96,100 @@ fun WalletDashboardHeader(
     isAmountVisible: Boolean,
     onToggleVisibility: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 32.dp)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f), // Very subtle, almost indistinguishable
+        shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp) // Soft bottom edges
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 32.dp)
         ) {
-            // Left Side: Balance Info
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "TOTAL BALANCE",
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.2.sp
-                    ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "$",
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = if (isAmountVisible) {
-                            balance.toString().let { if (it.contains(".")) it else "$it.00" }
-                        } else {
-                            "••••••"
-                        },
-                        style = MaterialTheme.typography.displayMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 44.sp,
-                            letterSpacing = if (isAmountVisible) (-1.5).sp else 2.sp
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    
-                    IconButton(
-                        onClick = onToggleVisibility,
-                        modifier = Modifier.padding(start = 8.dp).size(32.dp)
-                    ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top, // Align top for a more modern look
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Left Side: Balance Info
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = if (isAmountVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                            contentDescription = "Toggle Visibility",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            modifier = Modifier.size(20.dp)
+                            imageVector = Icons.Default.AccountBalanceWallet,
+                            contentDescription = null,
+                            tint = brandColor.copy(alpha = 0.8f),
+                            modifier = Modifier.size(16.dp) // Smaller icon
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "TOTAL BALANCE",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.2.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
                     }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Tied Top Up Button
-                Surface(
-                    onClick = { /* TODO */ },
-                    modifier = Modifier.height(44.dp).widthIn(min = 120.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    color = brandColor,
-                    contentColor = Color.White
-                ) {
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
                     Row(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "$",
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                            modifier = Modifier.padding(bottom = 2.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (isAmountVisible) {
+                                balance.toString().let { if (it.contains(".")) it else "$it.00" }
+                            } else {
+                                "••••••"
+                            },
+                            style = MaterialTheme.typography.displayMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 40.sp, // Slightly smaller for better fit
+                                letterSpacing = if (isAmountVisible) (-1.5).sp else 2.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        
+                        IconButton(
+                            onClick = onToggleVisibility,
+                            modifier = Modifier.padding(start = 4.dp).size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (isAmountVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = "Toggle Visibility",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Tied Top Up Button - Flat style
+                    Button(
+                        onClick = { /* TODO */ },
+                        modifier = Modifier.height(40.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = brandColor,
+                            contentColor = Color.White
+                        ),
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp) // Flat
                     ) {
                         Icon(
                             Icons.Default.Add,
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -185,62 +198,47 @@ fun WalletDashboardHeader(
                         )
                     }
                 }
-            }
 
-            // Right Side: Modern Wallet Icon
-            Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(brandColor.copy(alpha = 0.08f)),
-                contentAlignment = Alignment.Center
-            ) {
-                // Layered Card Icon Effect
+                // Small Brand Indicator or minimal decorative element
                 Box(
                     modifier = Modifier
-                        .size(60.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            Brush.linearGradient(
-                                listOf(brandColor, brandColor.copy(alpha = 0.6f))
-                            )
-                        ),
+                        .padding(top = 4.dp)
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(brandColor.copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.AccountBalanceWallet,
+                        imageVector = Icons.Default.Verified,
                         contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(32.dp)
+                        tint = brandColor,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
-        }
-        
-        Spacer(modifier = Modifier.height(32.dp))
-        
-        // Professional Info Bar
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-            shape = RoundedCornerShape(16.dp),
-            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
-        ) {
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            // Professional minimal Info Bar
             Row(
-                modifier = Modifier.padding(14.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    Icons.Default.VerifiedUser,
+                    Icons.Default.Security,
                     contentDescription = null,
-                    tint = brandColor,
-                    modifier = Modifier.size(18.dp)
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    modifier = Modifier.size(14.dp)
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = "Funds protected for ${brand.name}",
-                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = "Encrypted transaction platform for ${brand.name}",
+                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Normal),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                 )
             }
         }
