@@ -64,6 +64,7 @@ fun MainScreen() {
   var selectedBrand by remember { mutableStateOf<Brand?>(null) }
   var selectedProductId by remember { mutableStateOf<String?>(null) }
   var isTopUpNavigated by remember { mutableStateOf(false) }
+  var isCheckoutNavigated by remember { mutableStateOf(false) }
   var cartItems by remember(selectedBrand?.id) { mutableStateOf(listOf<CartItem>()) }
   var walletBalance by remember { mutableStateOf(124500.50) }
 
@@ -95,15 +96,18 @@ fun MainScreen() {
   val isProductSelected = selectedProductId != null
   val isBrandSelected = selectedBrand != null
   val isTopUpSelected = isTopUpNavigated
+  val isCheckoutSelected = isCheckoutNavigated
 
-  val title = if (isTopUpSelected) "Top Up Wallet" else if (isProductSelected) "Product Details" else if (isBrandSelected) selectedBrand!!.name else "ShopWallet"
+  val title = if (isCheckoutSelected) "Confirm Purchase" else if (isTopUpSelected) "Top Up Wallet" else if (isProductSelected) "Product Details" else if (isBrandSelected) selectedBrand!!.name else "ShopWallet"
 
   Box(modifier = Modifier.fillMaxSize()) {
     MainScaffold(
       title = title,
-      showBackButton = isBrandSelected || isProductSelected || isTopUpSelected,
+      showBackButton = isBrandSelected || isProductSelected || isTopUpSelected || isCheckoutSelected,
       onBackClick = {
-          if (isTopUpNavigated) {
+          if (isCheckoutNavigated) {
+              isCheckoutNavigated = false
+          } else if (isTopUpNavigated) {
               isTopUpNavigated = false
           } else if (selectedProductId != null) {
               selectedProductId = null
@@ -126,7 +130,20 @@ fun MainScreen() {
         BrandsGrid(onBrandClick = { selectedBrand = it })
       } else {
         ShopWalletTheme(brandColor = selectedBrand?.primaryColor?.toColor()) {
-            if (isTopUpNavigated) {
+            if (isCheckoutNavigated) {
+                val total = cartItems.sumOf { it.product.price * it.quantity } * 1.10
+                CheckoutConfirmationScreen(
+                    total = total,
+                    walletBalance = walletBalance,
+                    onConfirm = {
+                        walletBalance -= total
+                        cartItems = emptyList()
+                        isCheckoutNavigated = false
+                        selectedTab = BottomNavScreen.History
+                    },
+                    onBack = { isCheckoutNavigated = false }
+                )
+            } else if (isTopUpNavigated) {
                 TopUpScreen(
                     brand = selectedBrand!!,
                     onTopUpSuccess = { amount ->
@@ -158,7 +175,8 @@ fun MainScreen() {
                       walletBalance = walletBalance,
                       onRemoveItem = removeFromCartValue,
                       onUpdateQuantity = updateCartQuantityValue,
-                      onProductClick = { selectedProductId = it }
+                      onProductClick = { selectedProductId = it },
+                      onCheckout = { isCheckoutNavigated = true }
                     )
                     BottomNavScreen.History -> HistoryScreen()
                 }

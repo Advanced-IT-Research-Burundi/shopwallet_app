@@ -186,6 +186,7 @@ fun WalletDashboardHeader(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     // Top Up Button
+                    
                     Button(
                         onClick = onTopUpClick,
                         modifier = Modifier.height(40.dp),

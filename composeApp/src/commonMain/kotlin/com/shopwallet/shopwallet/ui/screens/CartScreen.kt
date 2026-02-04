@@ -34,7 +34,8 @@ fun CartScreen(
     walletBalance: Double,
     onRemoveItem: (String) -> Unit,
     onUpdateQuantity: (String, Int) -> Unit,
-    onProductClick: (String) -> Unit
+    onProductClick: (String) -> Unit,
+    onCheckout: () -> Unit
 ) {
   Column(
     modifier = Modifier
@@ -44,7 +45,7 @@ fun CartScreen(
     if (cartItems.isEmpty()) {
       EmptyCartView()
     } else {
-      CartContent(cartItems, walletBalance, onRemoveItem, onUpdateQuantity, onProductClick)
+      CartContent(cartItems, walletBalance, onRemoveItem, onUpdateQuantity, onProductClick, onCheckout)
     }
   }
 }
@@ -83,7 +84,8 @@ fun CartContent(
     walletBalance: Double,
     onRemoveItem: (String) -> Unit,
     onUpdateQuantity: (String, Int) -> Unit,
-    onProductClick: (String) -> Unit
+    onProductClick: (String) -> Unit,
+    onCheckout: () -> Unit
 ) {
   val subtotal = cartItems.sumOf { it.product.price * it.quantity }
   val tax = subtotal * 0.10
@@ -138,7 +140,7 @@ fun CartContent(
                 }
                 
                 Button(
-                    onClick = { /* TODO */ },
+                    onClick = onCheckout,
                     enabled = !isBeyondDebt,
                     modifier = Modifier.height(48.dp),
                     shape = RoundedCornerShape(12.dp),
