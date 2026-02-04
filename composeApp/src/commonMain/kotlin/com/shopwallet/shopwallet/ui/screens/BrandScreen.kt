@@ -17,14 +17,14 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -83,9 +83,22 @@ fun BrandScreen(brand: Brand) {
     }
   }
 
-  // Persist scroll state and reset only when brand changes
-  val listState = rememberSaveable(brand.id, saver = LazyGridState.Saver) {
-    LazyGridState()
+  val listState = rememberLazyGridState()
+
+  // Calculate sticky offset based on header position
+  val stickyHeaderOffset by remember {
+    derivedStateOf {
+      val layoutInfo = listState.layoutInfo
+      val firstItem = layoutInfo.visibleItemsInfo.find { it.index == 0 }
+      if (firstItem != null) {
+        // If header is partially visible, its sticky bottom is offset.y + size.height
+        // We ensure it never goes above 0 (pinned)
+        maxOf(0, firstItem.offset.y + firstItem.size.height)
+      } else {
+        // If header is scrolled past, filters are pinned at 0
+        0
+      }
+    }
   }
 
   // Detect if scroll is at top
@@ -95,103 +108,110 @@ fun BrandScreen(brand: Brand) {
     }
   }
 
+  Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
     LazyVerticalGrid(
       state = listState,
       columns = GridCells.Fixed(2),
       contentPadding = PaddingValues(bottom = 24.dp),
       verticalArrangement = Arrangement.spacedBy(16.dp),
-      modifier = Modifier
-        .fillMaxSize()
-        .background(MaterialTheme.colorScheme.background)
+      modifier = Modifier.fillMaxSize()
     ) {
       // 1. BRAND HEADER SECTION
       item(key = "brand_header", span = { GridItemSpan(2) }, contentType = "header") {
         BrandHeader(currentBrand)
       }
 
-        // 2. SEARCH & FILTER SECTION
-        item(key = "search_filter", span = { GridItemSpan(2) }, contentType = "filter") {
-          Column(
+      // 2. PLACEHOLDER FOR STICKY FILTERS
+      // This preserves space so products don't start under the floating header
+      item(key = "filter_placeholder", span = { GridItemSpan(2) }, contentType = "filter") {
+        Spacer(modifier = Modifier.height(130.dp))
+      }
+
+      // 3. PRODUCT GRID
+      if (filteredProducts.isEmpty()) {
+        item(key = "empty_state", span = { GridItemSpan(2) }, contentType = "status") {
+          Box(
             modifier = Modifier
               .fillMaxWidth()
-              .padding(horizontal = 16.dp)
+              .padding(top = 48.dp),
+            contentAlignment = Alignment.Center
           ) {
-              // Search Bar
-            ShopInput(
-              value = searchQuery,
-              onValueChange = { searchQuery = it },
-              placeholder = "Search in ${currentBrand.name}...",
-              leadingIcon = {
-                Icon(
-                  Icons.Default.Search,
-                  contentDescription = null,
-                  tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-              },
-              modifier = Modifier.fillMaxWidth()
+            Text(
+              "No products found",
+              style = MaterialTheme.typography.bodyLarge,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Categories
-            LazyRow(
-              horizontalArrangement = Arrangement.spacedBy(8.dp),
-              modifier = Modifier.fillMaxWidth()
-            ) {
-              item {
-                CategoryChip(
-                  name = "All",
-                  isSelected = selectedCategory == "all",
-                  onClick = { selectedCategory = "all" }
-                )
-              }
-              items(brandCategories) { category ->
-                CategoryChip(
-                  name = category.name,
-                  isSelected = selectedCategory == category.id,
-                  onClick = { selectedCategory = category.id }
-                )
-              }
-            }
           }
         }
+      } else {
+        items(
+          items = filteredProducts,
+          key = { product -> "product_${product.id}" },
+          contentType = { "product" }
+        ) { product ->
+          val index = filteredProducts.indexOf(product)
+          val startPadding = if (index % 2 == 0) 16.dp else 8.dp
+          val endPadding = if (index % 2 == 0) 8.dp else 16.dp
 
-        // 3. PRODUCT GRID
-        if (filteredProducts.isEmpty()) {
-          item(key = "empty_state", span = { GridItemSpan(2) }, contentType = "status") {
-            Box(
-              modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 48.dp),
-              contentAlignment = Alignment.Center
-            ) {
-              Text(
-                "No products found",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-              )
-            }
-          }
-        } else {
-           itemsIndexed(
-             items = filteredProducts,
-             key = { _, product -> "product_${product.id}" },
-             contentType = { _, _ -> "product" }
-           ) { index, product ->
-             val startPadding = if (index % 2 == 0) 16.dp else 8.dp // index even
-             val endPadding = if (index % 2 == 0) 8.dp else 16.dp // index odd
-
-             ProductCard(
-              name = product.name,
-              description = product.description,
-              price = product.price,
-              image = product.image,
-              onAddToCart = { /* TODO */ },
-              modifier = Modifier.padding(start = startPadding, end = endPadding)
-             )
-          }
+          ProductCard(
+            name = product.name,
+            description = product.description,
+            price = product.price,
+            image = product.image,
+            onAddToCart = { /* TODO */ },
+            modifier = Modifier.padding(start = startPadding, end = endPadding)
+          )
         }
+      }
     }
+
+    // 4. MANUAL STICKY HEADER
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .offset { IntOffset(0, stickyHeaderOffset) }
+        .background(MaterialTheme.colorScheme.background)
+        .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+      // Search Bar
+      ShopInput(
+        value = searchQuery,
+        onValueChange = { searchQuery = it },
+        placeholder = "Search in ${currentBrand.name}...",
+        leadingIcon = {
+          Icon(
+            Icons.Default.Search,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+          )
+        },
+        modifier = Modifier.fillMaxWidth()
+      )
+
+      Spacer(modifier = Modifier.height(16.dp))
+
+      // Categories
+      LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
+      ) {
+        item {
+          CategoryChip(
+            name = "All",
+            isSelected = selectedCategory == "all",
+            onClick = { selectedCategory = "all" }
+          )
+        }
+        items(brandCategories) { category ->
+          CategoryChip(
+            name = category.name,
+            isSelected = selectedCategory == category.id,
+            onClick = { selectedCategory = category.id }
+          )
+        }
+      }
+    }
+  }
 }
 
 @Composable
