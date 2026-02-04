@@ -51,19 +51,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import com.shopwallet.shopwallet.data.Brand
 import com.shopwallet.shopwallet.data.brands
 import com.shopwallet.shopwallet.data.categories
+import com.shopwallet.shopwallet.data.model.Brand
 import com.shopwallet.shopwallet.data.products
 import com.shopwallet.shopwallet.ui.components.ShopInput
 
 @Composable
-fun BrandScreen() {
+fun BrandScreen(brand: Brand) {
   var selectedCategory by remember { mutableStateOf("all") }
   var searchQuery by remember { mutableStateOf("") }
 
-  // Simulate "current brand" (using existing data)
-  val currentBrand = remember { brands.first() }
+  // Use the passed brand
+  val currentBrand = brand
 
   val brandProducts = remember(currentBrand.id) {
     products.filter { it.brandId == currentBrand.id }

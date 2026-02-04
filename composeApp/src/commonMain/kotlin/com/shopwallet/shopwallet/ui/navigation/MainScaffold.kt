@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,13 +50,21 @@ fun MainScaffold(
   showBackButton: Boolean,
   onBackClick: () -> Unit,
   snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+  actions: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {},
   bottomBar: @Composable () -> Unit = {},
   content: @Composable () -> Unit
 ) {
   Scaffold(
     topBar = {
       CenterAlignedTopAppBar(
-        title = { Text(title, style = MaterialTheme.typography.titleLarge) },
+        title = { 
+            Text(
+                title, 
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            ) 
+        },
         navigationIcon = {
           if (showBackButton) {
             IconButton(onClick = onBackClick) {
@@ -62,9 +72,20 @@ fun MainScaffold(
             }
           }
         },
+        actions = {
+            actions()
+            // Default Profile Icon
+            IconButton(onClick = { /* TODO: Navigate to Profile/Settings */ }) {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle, 
+                    contentDescription = "Profile",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-          containerColor = MaterialTheme.colorScheme.surface,
-          titleContentColor = MaterialTheme.colorScheme.onSurface
+          containerColor = MaterialTheme.colorScheme.background,
+          titleContentColor = MaterialTheme.colorScheme.onBackground
         )
       )
     },

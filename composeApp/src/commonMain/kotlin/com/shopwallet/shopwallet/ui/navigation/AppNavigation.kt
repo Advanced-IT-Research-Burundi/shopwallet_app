@@ -60,44 +60,16 @@ fun AppNavigation(
     }
 
     composable(Screen.Brand.route) {
-      MainScaffold(
-        title = stringResource(Res.string.label_brand),
-        showBackButton = true,
-        onBackClick = { navController.popBackStack() },
-        bottomBar = bottomBar
-      ) {
-        BrandScreen()
-      }
+      MainScreen()
     }
     composable(Screen.Wallet.route) {
-      MainScaffold(
-        title = stringResource(Res.string.label_wallet),
-        showBackButton = true,
-        onBackClick = { navController.popBackStack() },
-        bottomBar = bottomBar
-      ) {
-        WalletScreen()
-      }
+      MainScreen()
     }
     composable(Screen.Cart.route) {
-      MainScaffold(
-        title = stringResource(Res.string.label_cart),
-        showBackButton = true,
-        onBackClick = { navController.popBackStack() },
-        bottomBar = bottomBar
-      ) {
-        CartScreen()
-      }
+      MainScreen()
     }
     composable(Screen.History.route) {
-      MainScaffold(
-        title = stringResource(Res.string.label_history),
-        showBackButton = true,
-        onBackClick = { navController.popBackStack() },
-        bottomBar = bottomBar
-      ) {
-        HistoryScreen()
-      }
+      MainScreen()
     }
   }
 }

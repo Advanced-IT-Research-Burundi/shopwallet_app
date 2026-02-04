@@ -1,52 +1,29 @@
 package com.shopwallet.shopwallet.data
 
-import androidx.compose.ui.graphics.Color
+import com.shopwallet.shopwallet.data.model.Brand
+import com.shopwallet.shopwallet.data.model.Category
+import com.shopwallet.shopwallet.data.model.Product
 
-data class Brand(
-    val id: String,
-    val name: String,
-    val description: String,
-    val logo: String,
-    val coverImage: String,
-    val primaryColor: Long // Color as Long (ARGB)
-)
-
-data class Category(
-    val id: String,
-    val name: String
-)
-
-data class Product(
-    val id: String,
-    val brandId: String,
-    val name: String,
-    val description: String,
-    val price: Double,
-    val category: String,
-    val image: String
-)
 
 val brands = listOf(
-    Brand(
-        id = "1",
-        name = "Nike",
-        description = "Premium fashion for the modern era",
-        logo = "https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg",
-        coverImage = "https://static.nike.com/a/images/f_auto/2e8d9338-b43d-4ef5-96e1-7fdcfd838f8e/image.jpg",
-        primaryColor = 0xFF000000 // Black
-    ),
+  Brand(
+    id = "1",
+    name = "Nike",
+    description = "Premium fashion for the modern era",
+    logo = "https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg",
+    coverImage = "https://static.nike.com/a/images/f_auto/2e8d9338-b43d-4ef5-96e1-7fdcfd838f8e/image.jpg",
+  ),
     Brand(
         id = "2",
         name = "Tech Haven",
         description = "Latest gadgets and electronics",
         logo = "https://example.com/logo2.png",
         coverImage = "https://example.com/cover2.png",
-        primaryColor = 0xFF0055FF // Blue
     )
 )
 
 val categories = listOf(
-    Category("all", "All"),
+  Category("all", "All"),
     Category("clothing", "Clothing"),
     Category("shoes", "Shoes"),
     Category("accessories", "Accessories"),
@@ -54,15 +31,15 @@ val categories = listOf(
 )
 
 val products = listOf(
-    Product(
-        id = "1",
-        brandId = "1",
-        name = "Premium Cotton T-Shirt",
-        description = "High-quality cotton t-shirt with modern fit",
-        price = 29.99,
-        category = "clothing",
-        image = "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500"
-    ),
+  Product(
+    id = "1",
+    brandId = "1",
+    name = "Premium Cotton T-Shirt",
+    description = "High-quality cotton t-shirt with modern fit",
+    price = 29.99,
+    category = "clothing",
+    image = "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500"
+  ),
     Product(
         id = "2",
         brandId = "1",
