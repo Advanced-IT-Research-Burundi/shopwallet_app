@@ -1,6 +1,7 @@
 package com.shopwallet.shopwallet.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -270,13 +271,14 @@ fun CategoryChip(
   isSelected: Boolean,
   onClick: () -> Unit
 ) {
-  val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh
-  val contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+  val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background
+  val contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
 
   Box(
     modifier = Modifier
       .clip(RoundedCornerShape(50))
       .background(backgroundColor)
+      .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(50))
       .clickable(onClick = onClick)
       .padding(horizontal = 20.dp, vertical = 10.dp),
     contentAlignment = Alignment.Center
