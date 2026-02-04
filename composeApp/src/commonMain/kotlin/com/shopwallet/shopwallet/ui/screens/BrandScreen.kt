@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
@@ -41,6 +42,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,17 +75,25 @@ fun BrandScreen(brand: Brand) {
     categories.filter { it.brandId == currentBrand.id }
   }
 
-  val filteredProducts by remember(selectedCategory, searchQuery) {
-    derivedStateOf {
-      brandProducts.filter { product ->
-        val matchesCategory = selectedCategory == "all" || product.category == selectedCategory
-        val matchesSearch = product.name.contains(searchQuery, ignoreCase = true)
-        matchesCategory && matchesSearch
-      }
+  val filteredProducts = remember(selectedCategory, searchQuery, brandProducts) {
+    brandProducts.filter { product ->
+      val matchesCategory = selectedCategory == "all" || product.category == selectedCategory
+      val matchesSearch = product.name.contains(searchQuery, ignoreCase = true)
+      matchesCategory && matchesSearch
     }
   }
 
-    val listState = rememberLazyGridState()
+  // Persist scroll state and reset only when brand changes
+  val listState = rememberSaveable(brand.id, saver = LazyGridState.Saver) {
+    LazyGridState()
+  }
+
+  // Detect if scroll is at top
+  val isAtTop by remember {
+    derivedStateOf {
+      listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0
+    }
+  }
 
     LazyVerticalGrid(
       state = listState,
@@ -165,7 +175,7 @@ fun BrandScreen(brand: Brand) {
         } else {
            itemsIndexed(
              items = filteredProducts,
-             key = { _, product -> product.id },
+             key = { _, product -> "product_${product.id}" },
              contentType = { _, _ -> "product" }
            ) { index, product ->
              val startPadding = if (index % 2 == 0) 16.dp else 8.dp // index even
