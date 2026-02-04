@@ -63,7 +63,9 @@ fun MainScreen() {
 
   var selectedBrand by remember { mutableStateOf<Brand?>(null) }
   var selectedProductId by remember { mutableStateOf<String?>(null) }
+  var isTopUpNavigated by remember { mutableStateOf(false) }
   var cartItems by remember(selectedBrand?.id) { mutableStateOf(listOf<CartItem>()) }
+  var walletBalance by remember { mutableStateOf(124500.50) }
 
   val addToCartValue: (Product) -> Unit = { product ->
     val existingItem = cartItems.find { it.product.id == product.id }
@@ -92,15 +94,18 @@ fun MainScreen() {
 
   val isProductSelected = selectedProductId != null
   val isBrandSelected = selectedBrand != null
+  val isTopUpSelected = isTopUpNavigated
 
-  val title = if (isProductSelected) "Product Details" else if (isBrandSelected) selectedBrand!!.name else "ShopWallet"
+  val title = if (isTopUpSelected) "Top Up Wallet" else if (isProductSelected) "Product Details" else if (isBrandSelected) selectedBrand!!.name else "ShopWallet"
 
   Box(modifier = Modifier.fillMaxSize()) {
     MainScaffold(
       title = title,
-      showBackButton = isBrandSelected || isProductSelected,
+      showBackButton = isBrandSelected || isProductSelected || isTopUpSelected,
       onBackClick = {
-          if (selectedProductId != null) {
+          if (isTopUpNavigated) {
+              isTopUpNavigated = false
+          } else if (selectedProductId != null) {
               selectedProductId = null
           } else if (selectedTab != BottomNavScreen.Brand) {
               selectedTab = BottomNavScreen.Brand
@@ -121,7 +126,17 @@ fun MainScreen() {
         BrandsGrid(onBrandClick = { selectedBrand = it })
       } else {
         ShopWalletTheme(brandColor = selectedBrand?.primaryColor?.toColor()) {
-            if (selectedProductId != null) {
+            if (isTopUpNavigated) {
+                TopUpScreen(
+                    brand = selectedBrand!!,
+                    onTopUpSuccess = { amount ->
+                        walletBalance += amount
+                        isTopUpNavigated = false
+                        // TODO: Add to history
+                    },
+                    onBack = { isTopUpNavigated = false }
+                )
+            } else if (selectedProductId != null) {
                 ProductDetailsScreen(
                     productId = selectedProductId!!,
                     onAddToCart = addToCartValue,
@@ -134,10 +149,13 @@ fun MainScreen() {
                         onAddToCart = addToCartValue,
                         onProductClick = { selectedProductId = it }
                     )
-                    BottomNavScreen.Wallet -> WalletScreen(brand = selectedBrand!!)
+                    BottomNavScreen.Wallet -> WalletScreen(
+                        brand = selectedBrand!!,
+                        onTopUpClick = { isTopUpNavigated = true }
+                    )
                     BottomNavScreen.Cart -> CartScreen(
                       cartItems = cartItems, 
-                      walletBalance = 124500.50,
+                      walletBalance = walletBalance,
                       onRemoveItem = removeFromCartValue,
                       onUpdateQuantity = updateCartQuantityValue,
                       onProductClick = { selectedProductId = it }

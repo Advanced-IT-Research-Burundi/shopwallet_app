@@ -27,7 +27,7 @@ import com.shopwallet.shopwallet.ui.theme.LocalBrandColor
 import com.shopwallet.shopwallet.utils.CurrencyFormat
 
 @Composable
-fun WalletScreen(brand: Brand) {
+fun WalletScreen(brand: Brand, onTopUpClick: () -> Unit) {
     val brandColor = LocalBrandColor.current
     var isAmountVisible by remember { mutableStateOf(true) }
     
@@ -58,7 +58,8 @@ fun WalletScreen(brand: Brand) {
                 isAmountVisible = isAmountVisible,
                 onToggleVisibility = { isAmountVisible = !isAmountVisible },
                 monthlyOrders = monthlyOrders,
-                monthlyExpenses = monthlyExpenses
+                monthlyExpenses = monthlyExpenses,
+                onTopUpClick = onTopUpClick
             )
         }
 
@@ -100,7 +101,8 @@ fun WalletDashboardHeader(
     isAmountVisible: Boolean,
     onToggleVisibility: () -> Unit,
     monthlyOrders: Int,
-    monthlyExpenses: Double
+    monthlyExpenses: Double,
+    onTopUpClick: () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -185,7 +187,7 @@ fun WalletDashboardHeader(
 
                     // Top Up Button
                     Button(
-                        onClick = { /* TODO */ },
+                        onClick = onTopUpClick,
                         modifier = Modifier.height(40.dp),
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
