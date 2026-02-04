@@ -88,7 +88,7 @@ fun MainScreen() {
       } else {
         when (selectedTab) {
             BottomNavScreen.Brand -> BrandScreen(brand = selectedBrand!!)
-            BottomNavScreen.Wallet -> WalletScreen()
+            BottomNavScreen.Wallet -> WalletScreen(brand = selectedBrand!!)
             BottomNavScreen.Cart -> CartScreen()
             BottomNavScreen.History -> HistoryScreen()
         }
