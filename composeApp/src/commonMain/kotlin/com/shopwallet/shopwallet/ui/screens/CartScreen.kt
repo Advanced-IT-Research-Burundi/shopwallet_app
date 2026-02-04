@@ -7,8 +7,10 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,7 +26,7 @@ import coil3.compose.AsyncImage
 import com.shopwallet.shopwallet.data.model.CartItem
 
 @Composable
-fun CartScreen(cartItems: List<CartItem>) {
+fun CartScreen(cartItems: List<CartItem>, walletBalance: Double) {
   Column(
     modifier = Modifier
       .fillMaxSize()
@@ -33,7 +35,7 @@ fun CartScreen(cartItems: List<CartItem>) {
     if (cartItems.isEmpty()) {
       EmptyCartView()
     } else {
-      CartContent(cartItems)
+      CartContent(cartItems, walletBalance)
     }
   }
 }
@@ -67,8 +69,15 @@ fun EmptyCartView() {
 }
 
 @Composable
-fun CartContent(cartItems: List<CartItem>) {
-  val totalPrice = cartItems.sumOf { it.product.price * it.quantity }
+fun CartContent(cartItems: List<CartItem>, walletBalance: Double) {
+  val subtotal = cartItems.sumOf { it.product.price * it.quantity }
+  val tax = subtotal * 0.10
+  val total = subtotal + tax
+  val debtMargin = 50.0 // Allow up to $50 debt
+  
+  val isInsufficient = total > walletBalance
+  val isBeyondDebt = total > (walletBalance + debtMargin)
+  val isInDebtMarge = isInsufficient && !isBeyondDebt
 
   LazyColumn(
     modifier = Modifier.fillMaxSize(),
@@ -82,7 +91,7 @@ fun CartContent(cartItems: List<CartItem>) {
                 .padding(bottom = 32.dp)
         ) {
             Text(
-                text = "Order Summary",
+                text = "Checkout",
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.2.sp
@@ -99,12 +108,12 @@ fun CartContent(cartItems: List<CartItem>) {
             ) {
                 Column {
                     Text(
-                        text = "TOTAL PRICE",
+                        text = "ESTIMATED TOTAL",
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
                     Text(
-                        text = "$${totalPrice.let { if (it.toString().contains(".")) it else "$it.00" }}",
+                        text = "$${total.toString().let { if (it.contains(".")) it else "$it.00" }}",
                         style = MaterialTheme.typography.displaySmall.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 32.sp
@@ -115,24 +124,52 @@ fun CartContent(cartItems: List<CartItem>) {
                 
                 Button(
                     onClick = { /* TODO */ },
+                    enabled = !isBeyondDebt,
                     modifier = Modifier.height(48.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
+                        containerColor = if (isBeyondDebt) MaterialTheme.colorScheme.error.copy(alpha = 0.1f) else MaterialTheme.colorScheme.primary,
+                        contentColor = if (isBeyondDebt) MaterialTheme.colorScheme.error else Color.White
                     ),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Text(
-                        "Checkout",
+                        text = if (isBeyondDebt) "Blocked" else "Pay Now",
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                     )
                 }
             }
             
+            if (isInsufficient) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Surface(
+                    color = if (isBeyondDebt) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f) else Color(0xFFFFF7ED),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = if (isBeyondDebt) Icons.Default.Error else Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = if (isBeyondDebt) MaterialTheme.colorScheme.error else Color(0xFFEA580C),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (isBeyondDebt) "Insufficient funds. Please top up." else "Credit needed. Amount due later.",
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                            color = if (isBeyondDebt) MaterialTheme.colorScheme.error else Color(0xFFEA580C)
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
             
             Text(
-                text = "Selected Items",
+                text = "Items",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -151,11 +188,67 @@ fun CartContent(cartItems: List<CartItem>) {
       }
     }
     
-    // Bottom padding
+    // 3. Final Detailed Order Summary (Scrolling together)
     item {
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(32.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
+                .padding(24.dp)
+        ) {
+            Text(
+                text = "Detailed Order Summary",
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            SummaryRow("Subtotal", "$${subtotal.toString().let { if (it.contains(".")) it else "$it.00" }}")
+            SummaryRow("Tax (10%)", "$${tax.toString().let { if (it.contains(".")) it else "$it.00" }}")
+            
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 16.dp),
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+            )
+            
+            SummaryRow("Total", "$${total.toString().let { if (it.contains(".")) it else "$it.00" }}", isBold = true)
+            SummaryRow("Wallet Balance", "$${walletBalance.toString().let { if (it.contains(".")) it else "$it.00" }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            
+            if (isInsufficient) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = if (isBeyondDebt) "Insufficient funds. Please top up your wallet." else "Insufficient balance. Purchase will use credit margin.",
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = if (isBeyondDebt) MaterialTheme.colorScheme.error else Color(0xFFEA580C)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(48.dp))
     }
   }
+}
+
+@Composable
+fun SummaryRow(label: String, value: String, isBold: Boolean = false, color: Color = Color.Unspecified) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = if (isBold) MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold) else MaterialTheme.typography.bodyMedium,
+            color = if (color != Color.Unspecified) color else MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = if (isBold) MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.ExtraBold) else MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = if (isBold) MaterialTheme.colorScheme.onSurface else if (color != Color.Unspecified) color else MaterialTheme.colorScheme.onSurface
+        )
+    }
 }
 
 @Composable

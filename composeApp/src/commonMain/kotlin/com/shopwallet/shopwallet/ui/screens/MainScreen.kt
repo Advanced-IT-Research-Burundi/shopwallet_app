@@ -107,7 +107,7 @@ fun MainScreen() {
             when (selectedTab) {
                 BottomNavScreen.Brand -> BrandScreen(brand = selectedBrand!!, onAddToCart = addToCartValue)
                 BottomNavScreen.Wallet -> WalletScreen(brand = selectedBrand!!)
-                BottomNavScreen.Cart -> CartScreen(cartItems = cartItems)
+                BottomNavScreen.Cart -> CartScreen(cartItems = cartItems, walletBalance = 124.50)
                 BottomNavScreen.History -> HistoryScreen()
             }
         }
