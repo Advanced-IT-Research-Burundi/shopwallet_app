@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Warning
@@ -27,7 +28,12 @@ import com.shopwallet.shopwallet.data.model.CartItem
 import com.shopwallet.shopwallet.utils.CurrencyFormat
 
 @Composable
-fun CartScreen(cartItems: List<CartItem>, walletBalance: Double) {
+fun CartScreen(
+    cartItems: List<CartItem>, 
+    walletBalance: Double,
+    onRemoveItem: (String) -> Unit,
+    onUpdateQuantity: (String, Int) -> Unit
+) {
   Column(
     modifier = Modifier
       .fillMaxSize()
@@ -36,7 +42,7 @@ fun CartScreen(cartItems: List<CartItem>, walletBalance: Double) {
     if (cartItems.isEmpty()) {
       EmptyCartView()
     } else {
-      CartContent(cartItems, walletBalance)
+      CartContent(cartItems, walletBalance, onRemoveItem, onUpdateQuantity)
     }
   }
 }
@@ -70,7 +76,12 @@ fun EmptyCartView() {
 }
 
 @Composable
-fun CartContent(cartItems: List<CartItem>, walletBalance: Double) {
+fun CartContent(
+    cartItems: List<CartItem>, 
+    walletBalance: Double,
+    onRemoveItem: (String) -> Unit,
+    onUpdateQuantity: (String, Int) -> Unit
+) {
   val subtotal = cartItems.sumOf { it.product.price * it.quantity }
   val tax = subtotal * 0.10
   val total = subtotal + tax
@@ -179,7 +190,11 @@ fun CartContent(cartItems: List<CartItem>, walletBalance: Double) {
 
     // 2. Cart Items with Dividers
     itemsIndexed(cartItems) { index, item ->
-      CartItemRow(item)
+      CartItemRow(
+          item = item,
+          onRemove = { onRemoveItem(item.product.id) },
+          onUpdateQuantity = { qty -> onUpdateQuantity(item.product.id, qty) }
+      )
       if (index < cartItems.size - 1) {
         HorizontalDivider(
           modifier = Modifier.padding(vertical = 12.dp),
@@ -281,7 +296,11 @@ fun SummaryRow(label: String, value: String, isBold: Boolean = false, color: Col
 }
 
 @Composable
-fun CartItemRow(item: CartItem) {
+fun CartItemRow(
+    item: CartItem,
+    onRemove: () -> Unit,
+    onUpdateQuantity: (Int) -> Unit
+) {
     Row(
       modifier = Modifier
         .fillMaxWidth()
@@ -326,23 +345,45 @@ fun CartItemRow(item: CartItem) {
       }
       
       // Quantity Controls
-      Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-          .clip(RoundedCornerShape(8.dp))
-          .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-      ) {
-        IconButton(onClick = { /* TODO */ }, modifier = Modifier.size(28.dp)) {
-          Icon(Icons.Default.Remove, contentDescription = null, modifier = Modifier.size(14.dp))
-        }
-        Text(
-          text = item.quantity.toString(),
-          style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-          modifier = Modifier.padding(horizontal = 4.dp)
-        )
-        IconButton(onClick = { /* TODO */ }, modifier = Modifier.size(28.dp)) {
-          Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
-        }
+      Column(horizontalAlignment = Alignment.End) {
+          IconButton(
+              onClick = onRemove,
+              modifier = Modifier.size(32.dp)
+          ) {
+              Icon(
+                  imageVector = Icons.Default.DeleteOutline,
+                  contentDescription = "Remove",
+                  tint = MaterialTheme.colorScheme.error,
+                  modifier = Modifier.size(20.dp)
+              )
+          }
+          
+          Spacer(modifier = Modifier.height(8.dp))
+          
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+              .clip(RoundedCornerShape(8.dp))
+              .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+          ) {
+            IconButton(
+                onClick = { onUpdateQuantity(item.quantity - 1) }, 
+                modifier = Modifier.size(28.dp)
+            ) {
+              Icon(Icons.Default.Remove, contentDescription = null, modifier = Modifier.size(14.dp))
+            }
+            Text(
+              text = item.quantity.toString(),
+              style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+              modifier = Modifier.padding(horizontal = 4.dp)
+            )
+            IconButton(
+                onClick = { onUpdateQuantity(item.quantity + 1) }, 
+                modifier = Modifier.size(28.dp)
+            ) {
+              Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
+            }
+          }
       }
     }
 }

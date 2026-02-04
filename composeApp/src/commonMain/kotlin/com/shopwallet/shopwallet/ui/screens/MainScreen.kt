@@ -28,7 +28,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -76,6 +75,20 @@ fun MainScreen() {
     }
   }
 
+  val removeFromCartValue: (String) -> Unit = { productId ->
+    cartItems = cartItems.filter { it.product.id != productId }
+  }
+
+  val updateCartQuantityValue: (String, Int) -> Unit = { productId, newQuantity ->
+    if (newQuantity <= 0) {
+      removeFromCartValue(productId)
+    } else {
+      cartItems = cartItems.map {
+        if (it.product.id == productId) it.copy(quantity = newQuantity) else it
+      }
+    }
+  }
+
   val isBrandSelected = selectedBrand != null
 
   val title = if (isBrandSelected) selectedBrand!!.name else "ShopWallet"
@@ -107,7 +120,12 @@ fun MainScreen() {
             when (selectedTab) {
                 BottomNavScreen.Brand -> BrandScreen(brand = selectedBrand!!, onAddToCart = addToCartValue)
                 BottomNavScreen.Wallet -> WalletScreen(brand = selectedBrand!!)
-                BottomNavScreen.Cart -> CartScreen(cartItems = cartItems, walletBalance = 124500.50)
+                BottomNavScreen.Cart -> CartScreen(
+                  cartItems = cartItems, 
+                  walletBalance = 124500.50,
+                  onRemoveItem = removeFromCartValue,
+                  onUpdateQuantity = updateCartQuantityValue
+                )
                 BottomNavScreen.History -> HistoryScreen()
             }
         }
