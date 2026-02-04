@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.shopwallet.shopwallet.data.model.CartItem
+import com.shopwallet.shopwallet.utils.CurrencyFormat
 
 @Composable
 fun CartScreen(cartItems: List<CartItem>, walletBalance: Double) {
@@ -73,7 +74,7 @@ fun CartContent(cartItems: List<CartItem>, walletBalance: Double) {
   val subtotal = cartItems.sumOf { it.product.price * it.quantity }
   val tax = subtotal * 0.10
   val total = subtotal + tax
-  val debtMargin = 50.0 // Allow up to $50 debt
+  val debtMargin = 50000.0 // Allow up to 50,000 BIF debt
   
   val isInsufficient = total > walletBalance
   val isBeyondDebt = total > (walletBalance + debtMargin)
@@ -113,10 +114,10 @@ fun CartContent(cartItems: List<CartItem>, walletBalance: Double) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
                     Text(
-                        text = "$${total.toString().let { if (it.contains(".")) it else "$it.00" }}",
+                        text = "${CurrencyFormat.doubleToBif(total)} BIF",
                         style = MaterialTheme.typography.displaySmall.copy(
                             fontWeight = FontWeight.Bold,
-                            fontSize = 32.sp
+                            fontSize = 28.sp // Slightly smaller for larger numbers
                         ),
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -206,8 +207,8 @@ fun CartContent(cartItems: List<CartItem>, walletBalance: Double) {
             
             Spacer(modifier = Modifier.height(20.dp))
             
-            SummaryRow("Subtotal", "$${subtotal.toString().let { if (it.contains(".")) it else "$it.00" }}")
-            SummaryRow("Tax (10%)", "$${tax.toString().let { if (it.contains(".")) it else "$it.00" }}")
+            SummaryRow("Subtotal", "${CurrencyFormat.doubleToBif(subtotal)} BIF")
+            SummaryRow("Tax (10%)", "${CurrencyFormat.doubleToBif(tax)} BIF")
             
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 16.dp),
@@ -215,8 +216,8 @@ fun CartContent(cartItems: List<CartItem>, walletBalance: Double) {
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
             )
             
-            SummaryRow("Total", "$${total.toString().let { if (it.contains(".")) it else "$it.00" }}", isBold = true)
-            SummaryRow("Wallet Balance", "$${walletBalance.toString().let { if (it.contains(".")) it else "$it.00" }}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            SummaryRow("Total", "${CurrencyFormat.doubleToBif(total)} BIF", isBold = true)
+            SummaryRow("Wallet Balance", "${CurrencyFormat.doubleToBif(walletBalance)} BIF", color = MaterialTheme.colorScheme.onSurfaceVariant)
             
             if (isInsufficient) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -318,7 +319,7 @@ fun CartItemRow(item: CartItem) {
         Spacer(modifier = Modifier.height(4.dp))
         
         Text(
-          text = "$${item.product.price}",
+          text = "${CurrencyFormat.doubleToBif(item.product.price)} BIF",
           style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
           color = MaterialTheme.colorScheme.primary
         )

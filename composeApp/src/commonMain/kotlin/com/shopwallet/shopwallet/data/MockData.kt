@@ -46,7 +46,7 @@ val products = listOf(
         brandId = "1",
         name = "Slim Fit Jeans",
         description = "Classic denim jeans with stretch comfort",
-        price = 49.99,
+        price = 65000.00,
         category = "clothing",
         image = "https://images.unsplash.com/photo-1542272454315-4c01d7abdf4a?w=500"
     ),
@@ -55,7 +55,7 @@ val products = listOf(
         brandId = "1",
         name = "Leather Sneakers",
         description = "Handcrafted leather sneakers for daily wear",
-        price = 89.99,
+        price = 120000.00,
         category = "shoes",
         image = "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500"
     ),
@@ -64,7 +64,7 @@ val products = listOf(
         brandId = "2",
         name = "Wireless Headphones",
         description = "Noise-cancelling over-ear headphones",
-        price = 199.99,
+        price = 350000.00,
         category = "electronics",
         image = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500"
     ),
@@ -73,7 +73,7 @@ val products = listOf(
         brandId = "2",
         name = "Smart Watch",
         description = "Fitness tracker with heart rate monitor",
-        price = 149.99,
+        price = 280000.00,
         category = "electronics",
         image = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500"
     ),
@@ -82,7 +82,7 @@ val products = listOf(
         brandId = "1",
         name = "Designer Sunglasses",
         description = "UV protection with stylish frames",
-        price = 129.99,
+        price = 145000.00,
         category = "accessories",
         image = "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500"
     )

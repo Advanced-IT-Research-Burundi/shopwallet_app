@@ -58,6 +58,7 @@ import com.shopwallet.shopwallet.data.categories
 import com.shopwallet.shopwallet.data.model.Brand
 import com.shopwallet.shopwallet.data.products
 import com.shopwallet.shopwallet.data.model.Product
+import com.shopwallet.shopwallet.utils.CurrencyFormat
 import com.shopwallet.shopwallet.ui.components.ShopInput
 
 @Composable
@@ -392,7 +393,7 @@ fun ProductCard(
           verticalAlignment = Alignment.CenterVertically
         ) {
           Text(
-            text = "$${product.price}",
+            text = "${CurrencyFormat.doubleToBif(product.price)} BIF",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.primary
           )

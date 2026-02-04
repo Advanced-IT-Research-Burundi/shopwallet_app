@@ -27,6 +27,7 @@ import com.shopwallet.shopwallet.data.model.Brand
 import com.shopwallet.shopwallet.data.model.Transaction
 import com.shopwallet.shopwallet.data.model.TransactionType
 import com.shopwallet.shopwallet.ui.theme.LocalBrandColor
+import com.shopwallet.shopwallet.utils.CurrencyFormat
 
 @Composable
 fun WalletScreen(brand: Brand) {
@@ -35,10 +36,10 @@ fun WalletScreen(brand: Brand) {
     
     val transactions = listOf(
         Transaction("1", "Purchase at ${brand.name}", -45.00, "Today, 2:30 PM", TransactionType.PURCHASE),
-        Transaction("2", "Wallet Top-up", 100.00, "Yesterday, 10:15 AM", TransactionType.TOPUP),
-        Transaction("3", "Refund - Order #1234", 25.50, "Feb 2, 2024", TransactionType.REFUND),
-        Transaction("4", "Purchase at ${brand.name}", -12.99, "Feb 1, 2024", TransactionType.PURCHASE),
-        Transaction("5", "Wallet Top-up", 50.00, "Jan 28, 2024", TransactionType.TOPUP)
+        Transaction("2", "Wallet Top-up", 100000.00, "Yesterday, 10:15 AM", TransactionType.TOPUP),
+        Transaction("3", "Refund - Order #1234", 25500.50, "Feb 2, 2024", TransactionType.REFUND),
+        Transaction("4", "Purchase at ${brand.name}", -12500.99, "Feb 1, 2024", TransactionType.PURCHASE),
+        Transaction("5", "Wallet Top-up", 50000.00, "Jan 28, 2024", TransactionType.TOPUP)
     )
 
     LazyColumn(
@@ -51,7 +52,7 @@ fun WalletScreen(brand: Brand) {
         item {
             WalletDashboardHeader(
                 brand = brand,
-                balance = 124.50,
+                balance = 124500.50,
                 brandColor = brandColor,
                 isAmountVisible = isAmountVisible,
                 onToggleVisibility = { isAmountVisible = !isAmountVisible }
@@ -136,28 +137,31 @@ fun WalletDashboardHeader(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                    Text(
+                        text = if (isAmountVisible) {
+                            CurrencyFormat.doubleToBif(balance)
+                        } else {
+                            "••••••"
+                        },
+                        style = MaterialTheme.typography.displayMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 40.sp, // Slightly smaller for better fit
+                            letterSpacing = if (isAmountVisible) (-1.5).sp else 2.sp
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    
+                    if (isAmountVisible) {
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "$",
-                            style = MaterialTheme.typography.headlineMedium.copy(
+                            text = "BIF",
+                            style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.SemiBold
                             ),
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                            modifier = Modifier.padding(bottom = 2.dp)
+                            modifier = Modifier.padding(top = 8.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = if (isAmountVisible) {
-                                balance.toString().let { if (it.contains(".")) it else "$it.00" }
-                            } else {
-                                "••••••"
-                            },
-                            style = MaterialTheme.typography.displayMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 40.sp, // Slightly smaller for better fit
-                                letterSpacing = if (isAmountVisible) (-1.5).sp else 2.sp
-                            ),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                    }
                         
                         IconButton(
                             onClick = onToggleVisibility,
@@ -290,7 +294,7 @@ fun TransactionItem(transaction: Transaction) {
         }
 
         Text(
-            text = "${if (transaction.amount > 0) "+" else "-"}$${kotlin.math.abs(transaction.amount).toString().let { if (it.contains(".")) it else "$it.00" }}",
+            text = "${if (transaction.amount > 0) "+" else "-"}${CurrencyFormat.doubleToBif(kotlin.math.abs(transaction.amount))} BIF",
             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
             color = if (transaction.amount > 0) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurface
         )
