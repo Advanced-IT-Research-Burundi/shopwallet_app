@@ -29,10 +29,10 @@ data class Product(
 val brands = listOf(
     Brand(
         id = "1",
-        name = "Luxe Boutique",
+        name = "Nike",
         description = "Premium fashion for the modern era",
-        logo = "https://example.com/logo1.png",
-        coverImage = "https://example.com/cover1.png",
+        logo = "https://i.ebayimg.com/images/g/GooAAOSw9ANipV8u/s-l1200.jpg",
+        coverImage = "https://static.nike.com/a/images/f_auto/2e8d9338-b43d-4ef5-96e1-7fdcfd838f8e/image.jpg",
         primaryColor = 0xFF000000 // Black
     ),
     Brand(
