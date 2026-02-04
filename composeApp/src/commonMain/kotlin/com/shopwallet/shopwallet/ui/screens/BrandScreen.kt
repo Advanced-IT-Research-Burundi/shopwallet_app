@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.shopwallet.shopwallet.data.brands
 import com.shopwallet.shopwallet.data.categories
 import com.shopwallet.shopwallet.data.products
@@ -177,9 +178,11 @@ fun ProductCard(
         .background(MaterialTheme.colorScheme.surfaceVariant),
       contentAlignment = Alignment.Center
     ) {
-       // Ideally use AsyncImage here. For now, a placeholder text/icon.
-       // Since the user didn't explicitly provide an image loader, we keep it simple.
-       Text("Image", color = MaterialTheme.colorScheme.onSurfaceVariant)
+      AsyncImage(
+        model = image,
+        contentDescription = name,
+        modifier = Modifier.fillMaxSize()
+      )
     }
 
     Column(modifier = Modifier.padding(12.dp)) {
