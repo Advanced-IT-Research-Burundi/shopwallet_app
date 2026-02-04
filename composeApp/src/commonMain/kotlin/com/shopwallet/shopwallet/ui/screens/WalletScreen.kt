@@ -10,17 +10,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.shopwallet.shopwallet.data.model.Brand
@@ -35,12 +32,16 @@ fun WalletScreen(brand: Brand) {
     var isAmountVisible by remember { mutableStateOf(true) }
     
     val transactions = listOf(
-        Transaction("1", "Purchase at ${brand.name}", -45.00, "Today, 2:30 PM", TransactionType.PURCHASE),
+        Transaction("1", "Purchase at ${brand.name}", -45000.00, "Today, 2:30 PM", TransactionType.PURCHASE),
         Transaction("2", "Wallet Top-up", 100000.00, "Yesterday, 10:15 AM", TransactionType.TOPUP),
         Transaction("3", "Refund - Order #1234", 25500.50, "Feb 2, 2024", TransactionType.REFUND),
         Transaction("4", "Purchase at ${brand.name}", -12500.99, "Feb 1, 2024", TransactionType.PURCHASE),
         Transaction("5", "Wallet Top-up", 50000.00, "Jan 28, 2024", TransactionType.TOPUP)
     )
+    
+    val monthlyTransactions = transactions.filter { it.date.contains("Today") || it.date.contains("Yesterday") || it.date.contains("Feb") }
+    val monthlyOrders = monthlyTransactions.count { it.type == TransactionType.PURCHASE }
+    val monthlyExpenses = monthlyTransactions.filter { it.type == TransactionType.PURCHASE }.sumOf { kotlin.math.abs(it.amount) }
 
     LazyColumn(
         modifier = Modifier
@@ -55,7 +56,9 @@ fun WalletScreen(brand: Brand) {
                 balance = 124500.50,
                 brandColor = brandColor,
                 isAmountVisible = isAmountVisible,
-                onToggleVisibility = { isAmountVisible = !isAmountVisible }
+                onToggleVisibility = { isAmountVisible = !isAmountVisible },
+                monthlyOrders = monthlyOrders,
+                monthlyExpenses = monthlyExpenses
             )
         }
 
@@ -95,12 +98,14 @@ fun WalletDashboardHeader(
     balance: Double,
     brandColor: Color,
     isAmountVisible: Boolean,
-    onToggleVisibility: () -> Unit
+    onToggleVisibility: () -> Unit,
+    monthlyOrders: Int,
+    monthlyExpenses: Double
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f), // Very subtle, almost indistinguishable
-        shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp) // Soft bottom edges
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f), // Very subtle
+        shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
     ) {
         Column(
             modifier = Modifier
@@ -109,7 +114,7 @@ fun WalletDashboardHeader(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top, // Align top for a more modern look
+                verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 // Left Side: Balance Info
@@ -119,7 +124,7 @@ fun WalletDashboardHeader(
                             imageVector = Icons.Default.AccountBalanceWallet,
                             contentDescription = null,
                             tint = brandColor.copy(alpha = 0.8f),
-                            modifier = Modifier.size(16.dp) // Smaller icon
+                            modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -145,7 +150,7 @@ fun WalletDashboardHeader(
                         },
                         style = MaterialTheme.typography.displayMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            fontSize = 40.sp, // Slightly smaller for better fit
+                            fontSize = 40.sp,
                             letterSpacing = if (isAmountVisible) (-1.5).sp else 2.sp
                         ),
                         color = MaterialTheme.colorScheme.onSurface
@@ -178,7 +183,7 @@ fun WalletDashboardHeader(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Tied Top Up Button - Flat style
+                    // Top Up Button
                     Button(
                         onClick = { /* TODO */ },
                         modifier = Modifier.height(40.dp),
@@ -188,7 +193,7 @@ fun WalletDashboardHeader(
                             contentColor = Color.White
                         ),
                         contentPadding = PaddingValues(horizontal = 20.dp),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp) // Flat
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                     ) {
                         Icon(
                             Icons.Default.Add,
@@ -203,7 +208,7 @@ fun WalletDashboardHeader(
                     }
                 }
 
-                // Small Brand Indicator or minimal decorative element
+                // Brand Indicator
                 Box(
                     modifier = Modifier
                         .padding(top = 4.dp)
@@ -223,7 +228,7 @@ fun WalletDashboardHeader(
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            // Professional minimal Info Bar
+            // Info Bar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -243,6 +248,37 @@ fun WalletDashboardHeader(
                     text = "Encrypted transaction platform for ${brand.name}",
                     style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Normal),
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Monthly stats
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                StatColumn(
+                    label = "ORDERS",
+                    value = "$monthlyOrders",
+                    modifier = Modifier.weight(1f)
+                )
+
+                VerticalDivider()
+
+                StatColumn(
+                    label = "EXPENSES",
+                    value = "${CurrencyFormat.doubleToBif(monthlyExpenses)} BIF",
+                    modifier = Modifier.weight(1.5f)
+                )
+
+                VerticalDivider()
+
+                StatColumn(
+                    label = "CREDIT LIMIT",
+                    value = "50 000 BIF",
+                    modifier = Modifier.weight(1.2f)
                 )
             }
         }
@@ -299,4 +335,39 @@ fun TransactionItem(transaction: Transaction) {
             color = if (transaction.amount > 0) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurface
         )
     }
+}
+
+@Composable
+fun StatColumn(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
+            ),
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+fun VerticalDivider() {
+    Box(
+        modifier = Modifier
+            .height(24.dp)
+            .width(1.dp)
+            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+    )
 }
