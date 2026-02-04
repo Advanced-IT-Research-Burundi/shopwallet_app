@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,9 +50,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import com.shopwallet.shopwallet.data.brands
 import com.shopwallet.shopwallet.data.categories
 import com.shopwallet.shopwallet.data.model.Brand
 import com.shopwallet.shopwallet.data.products
@@ -79,7 +78,10 @@ fun BrandScreen(brand: Brand) {
     }
   }
 
+    val listState = rememberLazyGridState()
+
     LazyVerticalGrid(
+      state = listState,
       columns = GridCells.Fixed(2),
       contentPadding = PaddingValues(bottom = 24.dp),
       verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -149,7 +151,10 @@ fun BrandScreen(brand: Brand) {
             }
           }
         } else {
-           items(filteredProducts) { product ->
+           items(
+             items = filteredProducts,
+             key = { it.id }
+           ) { product ->
              val index = filteredProducts.indexOf(product)
              val startPadding = if (index % 2 == 0) 16.dp else 8.dp // index even
              val endPadding = if (index % 2 == 0) 8.dp else 16.dp // index odd
