@@ -65,13 +65,13 @@ fun MainScaffold(
                 overflow = TextOverflow.Ellipsis
             ) 
         },
-        navigationIcon = {
-          if (showBackButton) {
-            IconButton(onClick = onBackClick) {
-              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.action_back))
-            }
-          }
-        },
+//        navigationIcon = {
+//          if (showBackButton) {
+//            IconButton(onClick = onBackClick) {
+//              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.action_back))
+//            }
+//          }
+//        },
         actions = {
             actions()
             // Default Profile Icon
@@ -119,9 +119,9 @@ fun BottomNavBar(
       windowInsets = WindowInsets(0.dp)
     ) {
       val items = listOf(
-        BottomNavScreen.Brand,
+//        BottomNavScreen.Brand,
         BottomNavScreen.Wallet,
-        BottomNavScreen.Cart,
+//        BottomNavScreen.Cart,
         BottomNavScreen.History
       )
 
