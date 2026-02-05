@@ -1,17 +1,23 @@
 package com.shopwallet.shopwallet.ui.navigation
+import com.shopwallet.shopwallet.data.brands
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
+import com.shopwallet.shopwallet.ui.viewmodel.SecurityViewModel
 import com.shopwallet.shopwallet.ui.auth.AuthScreen
-import com.shopwallet.shopwallet.ui.screens.BrandScreen
-import com.shopwallet.shopwallet.ui.screens.CartScreen
-import com.shopwallet.shopwallet.ui.screens.HistoryScreen
-import com.shopwallet.shopwallet.ui.screens.MainScreen
-import com.shopwallet.shopwallet.ui.screens.WalletScreen
+import com.shopwallet.shopwallet.ui.screens.BrandMainScreen
+import com.shopwallet.shopwallet.ui.screens.BrandsGrid
+import com.shopwallet.shopwallet.ui.screens.PinScreen
+import com.shopwallet.shopwallet.data.local.AppPreferenceManager
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.LaunchedEffect
 import org.jetbrains.compose.resources.stringResource
 import shopwallet.composeapp.generated.resources.Res
 import shopwallet.composeapp.generated.resources.label_brand
@@ -22,54 +28,124 @@ import shopwallet.composeapp.generated.resources.label_wallet
 @Composable
 fun AppNavigation(
   navController: NavHostController,
+  prefs: AppPreferenceManager,
+  securityViewModel: SecurityViewModel,
   onExit: () -> Unit
 ) {
 
   val navBackStackEntry by navController.currentBackStackEntryAsState()
   val currentRoute = navBackStackEntry?.destination?.route
 
-  val bottomBar: @Composable () -> Unit = {
-    BottomNavBar(
-      selectedRoute = currentRoute,
-      onItemSelected = { screen ->
-        navController.navigate(screen.route) {
-          popUpTo(Screen.Brand.route) {
-            saveState = true
+  // Security Layer
+  if (!securityViewModel.hasPinSet && currentRoute != Screen.Auth.route) {
+      PinScreen(
+          title = "Setup PIN",
+          subtitle = "Create a 4-digit PIN to secure your wallet",
+          onPinSubmit = { pin -> securityViewModel.setPin(pin) }
+      )
+      return
+  }
+
+  if (securityViewModel.isLocked) {
+      PinScreen(
+          title = "Welcome Back",
+          subtitle = "Enter your PIN to unlock",
+          onPinSubmit = { pin -> 
+              if (!securityViewModel.unlock(pin)) {
+                  // Handle wrong PIN
+              }
           }
-          launchSingleTop = true
-          restoreState = true
-        }
-      }
-    )
+      )
+      return
   }
 
   NavHost(
     navController = navController,
-    startDestination = Screen.Auth.route
+    startDestination = if(prefs.isLoggedIn) Screen.Brands.route else Screen.Auth.route
   ) {
     composable(Screen.Auth.route) {
       AuthScreen {
-        navController.navigate(Screen.Brand.route) {
+        prefs.isLoggedIn = true
+        navController.navigate(Screen.Brands.route) {
           popUpTo(Screen.Auth.route) { inclusive = true }
         }
       }
     }
 
-    composable(Screen.Main.route) {
-      MainScreen()
+    composable(Screen.Brands.route) {
+      MainScaffold(
+        title = "ShopWallet",
+        showBackButton = false,
+        onBackClick = {}
+      ) {
+        BrandsGrid(onBrandClick = { brand ->
+          navController.navigate(Screen.BrandDetails.createRoute(brand.id))
+        })
+      }
     }
 
-    composable(Screen.Brand.route) {
-      MainScreen()
-    }
-    composable(Screen.Wallet.route) {
-      MainScreen()
-    }
-    composable(Screen.Cart.route) {
-      MainScreen()
-    }
-    composable(Screen.History.route) {
-      MainScreen()
+    // Nested Brand Graph to share ViewModel/State
+    navigation(
+        startDestination = Screen.BrandDetails.route,
+        route = "brand_graph/{brandId}"
+    ) {
+        composable(Screen.BrandDetails.route) { backStackEntry ->
+            val brandId = backStackEntry.arguments?.getString("brandId")
+            BrandContainer(brandId, navController, Screen.BrandDetails.route, backStackEntry, prefs)
+        }
+        composable(Screen.Wallet.route) { backStackEntry ->
+            val brandId = backStackEntry.arguments?.getString("brandId")
+            BrandContainer(brandId, navController, Screen.Wallet.route, backStackEntry, prefs)
+        }
+        composable(Screen.Cart.route) { backStackEntry ->
+            val brandId = backStackEntry.arguments?.getString("brandId")
+            BrandContainer(brandId, navController, Screen.Cart.route, backStackEntry, prefs)
+        }
+        composable(Screen.History.route) { backStackEntry ->
+            val brandId = backStackEntry.arguments?.getString("brandId")
+            BrandContainer(brandId, navController, Screen.History.route, backStackEntry, prefs)
+        }
+        composable(Screen.ProductDetails.route) { backStackEntry ->
+            val brandId = backStackEntry.arguments?.getString("brandId")
+            val productId = backStackEntry.arguments?.getString("productId")
+            BrandContainer(brandId, navController, Screen.ProductDetails.route, backStackEntry, prefs, productId)
+        }
+        composable(Screen.TopUp.route) { backStackEntry ->
+            val brandId = backStackEntry.arguments?.getString("brandId")
+            BrandContainer(brandId, navController, Screen.TopUp.route, backStackEntry, prefs)
+        }
+        composable(Screen.Checkout.route) { backStackEntry ->
+            val brandId = backStackEntry.arguments?.getString("brandId")
+            BrandContainer(brandId, navController, Screen.Checkout.route, backStackEntry, prefs)
+        }
     }
   }
+}
+
+@Composable
+fun BrandContainer(
+    brandId: String?,
+    navController: NavHostController,
+    currentRoute: String,
+    backStackEntry: androidx.navigation.NavBackStackEntry,
+    prefs: AppPreferenceManager,
+    productId: String? = null
+) {
+    val brand = brands.find { it.id == brandId } ?: return
+    
+    // Get the ViewModel scoped to the nested graph
+    val parentEntry = remember(backStackEntry) {
+        navController.getBackStackEntry("brand_graph/{brandId}")
+    }
+    val viewModel: BrandViewModel = viewModel(parentEntry) {
+        BrandViewModel(brandId ?: "", prefs)
+    }
+    
+    BrandMainScreen(
+        brand = brand,
+        currentRoute = currentRoute,
+        productId = productId,
+        navController = navController,
+        viewModel = viewModel
+    )
 }

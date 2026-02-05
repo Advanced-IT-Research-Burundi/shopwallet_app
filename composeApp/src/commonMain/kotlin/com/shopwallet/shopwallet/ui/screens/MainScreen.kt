@@ -43,146 +43,120 @@ import com.shopwallet.shopwallet.ui.navigation.BottomNavScreen
 import com.shopwallet.shopwallet.ui.navigation.MainScaffold
 import com.shopwallet.shopwallet.ui.theme.ShopWalletTheme
 import com.shopwallet.shopwallet.ui.theme.toColor
+import androidx.navigation.NavHostController
+import com.shopwallet.shopwallet.ui.navigation.Screen
+import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun MainScreen() {
-  var selectedTab by rememberSaveable(
-    stateSaver = Saver(
-      save = { it.route },
-      restore = { route ->
-        when (route) {
-          BottomNavScreen.Brand.route -> BottomNavScreen.Brand
-          BottomNavScreen.Wallet.route -> BottomNavScreen.Wallet
-          BottomNavScreen.Cart.route -> BottomNavScreen.Cart
-          BottomNavScreen.History.route -> BottomNavScreen.History
-          else -> BottomNavScreen.Brand
-        }
-      }
-    )
-  ) { mutableStateOf<BottomNavScreen>(BottomNavScreen.Brand) }
+fun BrandMainScreen(
+    brand: Brand,
+    currentRoute: String,
+    productId: String? = null,
+    navController: NavHostController,
+    viewModel: BrandViewModel
+) {
+  val cartItems = viewModel.cartItems
+  val walletBalance = viewModel.walletBalance
 
-  var selectedBrand by remember { mutableStateOf<Brand?>(null) }
-  var selectedProductId by remember { mutableStateOf<String?>(null) }
-  var isTopUpNavigated by remember { mutableStateOf(false) }
-  var isCheckoutNavigated by remember { mutableStateOf(false) }
-  var cartItems by remember(selectedBrand?.id) { mutableStateOf(listOf<CartItem>()) }
-  var walletBalance by remember { mutableStateOf(124500.50) }
+  val isProductSelected = currentRoute.contains("/product/")
+  val isTopUpSelected = currentRoute.contains("/topup")
+  val isCheckoutSelected = currentRoute.contains("/checkout")
+  val isBrandSelected = true
 
-  val addToCartValue: (Product) -> Unit = { product ->
-    val existingItem = cartItems.find { it.product.id == product.id }
-    if (existingItem != null) {
-      cartItems = cartItems.map {
-        if (it.product.id == product.id) it.copy(quantity = it.quantity + 1) else it
-      }
-    } else {
-      cartItems = cartItems + CartItem(product)
-    }
+  val title = when {
+      isCheckoutSelected -> "Confirm Purchase"
+      isTopUpSelected -> "Top Up Wallet"
+      isProductSelected -> "Product Details"
+      currentRoute.contains("/wallet") -> "My Wallet"
+      currentRoute.contains("/cart") -> "My Cart"
+      currentRoute.contains("/history") -> "History"
+      else -> brand.name
   }
 
-  val removeFromCartValue: (String) -> Unit = { productId ->
-    cartItems = cartItems.filter { it.product.id != productId }
-  }
-
-  val updateCartQuantityValue: (String, Int) -> Unit = { productId, newQuantity ->
-    if (newQuantity <= 0) {
-      removeFromCartValue(productId)
-    } else {
-      cartItems = cartItems.map {
-        if (it.product.id == productId) it.copy(quantity = newQuantity) else it
-      }
-    }
-  }
-
-  val isProductSelected = selectedProductId != null
-  val isBrandSelected = selectedBrand != null
-  val isTopUpSelected = isTopUpNavigated
-  val isCheckoutSelected = isCheckoutNavigated
-
-  val title = if (isCheckoutSelected) "Confirm Purchase" else if (isTopUpSelected) "Top Up Wallet" else if (isProductSelected) "Product Details" else if (isBrandSelected) selectedBrand!!.name else "ShopWallet"
-
-  Box(modifier = Modifier.fillMaxSize()) {
+  ShopWalletTheme(brandColor = brand.primaryColor.toColor()) {
     MainScaffold(
       title = title,
-      showBackButton = isBrandSelected || isProductSelected || isTopUpSelected || isCheckoutSelected,
+      showBackButton = true,
       onBackClick = {
-          if (isCheckoutNavigated) {
-              isCheckoutNavigated = false
-          } else if (isTopUpNavigated) {
-              isTopUpNavigated = false
-          } else if (selectedProductId != null) {
-              selectedProductId = null
-          } else if (selectedTab != BottomNavScreen.Brand) {
-              selectedTab = BottomNavScreen.Brand
-          } else {
-              selectedBrand = null
-          }
+          navController.popBackStack()
       },
       bottomBar = {
-        if (isBrandSelected) {
+        if (!isProductSelected && !isTopUpSelected && !isCheckoutSelected) {
              BottomNavBar(
-              selectedRoute = selectedTab.route,
-              onItemSelected = { selectedTab = it }
+              selectedRoute = currentRoute,
+              onItemSelected = { screen ->
+                  navController.navigate(screen.route.replace("{brandId}", brand.id)) {
+                      popUpTo(Screen.BrandDetails.createRoute(brand.id)) {
+                          saveState = true
+                      }
+                      launchSingleTop = true
+                      restoreState = true
+                  }
+              }
             )
         }
       }
     ) {
-      if (!isBrandSelected) {
-        BrandsGrid(onBrandClick = { selectedBrand = it })
-      } else {
-        ShopWalletTheme(brandColor = selectedBrand?.primaryColor?.toColor()) {
-            if (isCheckoutNavigated) {
+        when {
+            isCheckoutSelected -> {
                 val total = cartItems.sumOf { it.product.price * it.quantity } * 1.10
                 CheckoutConfirmationScreen(
                     total = total,
                     walletBalance = walletBalance,
                     onConfirm = {
-                        walletBalance -= total
-                        cartItems = emptyList()
-                        isCheckoutNavigated = false
-                        selectedTab = BottomNavScreen.History
+                        viewModel.confirmPurchase(total)
+                        navController.navigate(Screen.History.createRoute(brand.id)) {
+                            popUpTo(Screen.BrandDetails.createRoute(brand.id)) { inclusive = false }
+                        }
                     },
-                    onBack = { isCheckoutNavigated = false }
+                    onBack = { navController.popBackStack() }
                 )
-            } else if (isTopUpNavigated) {
+            }
+            isTopUpSelected -> {
                 TopUpScreen(
-                    brand = selectedBrand!!,
+                    brand = brand,
                     onTopUpSuccess = { amount ->
-                        walletBalance += amount
-                        isTopUpNavigated = false
-                        // TODO: Add to history
+                        viewModel.topUp(amount)
+                        navController.popBackStack()
                     },
-                    onBack = { isTopUpNavigated = false }
+                    onBack = { navController.popBackStack() }
                 )
-            } else if (selectedProductId != null) {
+            }
+            isProductSelected -> {
                 ProductDetailsScreen(
-                    productId = selectedProductId!!,
-                    onAddToCart = addToCartValue,
-                    onBack = { selectedProductId = null }
+                    productId = productId ?: "",
+                    onAddToCart = { viewModel.addToCart(it) },
+                    onBack = { navController.popBackStack() }
                 )
-            } else {
-                when (selectedTab) {
-                    BottomNavScreen.Brand -> BrandScreen(
-                        brand = selectedBrand!!, 
-                        onAddToCart = addToCartValue,
-                        onProductClick = { selectedProductId = it }
-                    )
-                    BottomNavScreen.Wallet -> WalletScreen(
-                        brand = selectedBrand!!,
-                        onTopUpClick = { isTopUpNavigated = true }
-                    )
-                    BottomNavScreen.Cart -> CartScreen(
-                      cartItems = cartItems, 
-                      walletBalance = walletBalance,
-                      onRemoveItem = removeFromCartValue,
-                      onUpdateQuantity = updateCartQuantityValue,
-                      onProductClick = { selectedProductId = it },
-                      onCheckout = { isCheckoutNavigated = true }
-                    )
-                    BottomNavScreen.History -> HistoryScreen()
-                }
+            }
+            currentRoute.contains("/wallet") -> {
+                WalletScreen(
+                    brand = brand,
+                    onTopUpClick = { navController.navigate(Screen.TopUp.createRoute(brand.id)) }
+                )
+            }
+            currentRoute.contains("/cart") -> {
+                CartScreen(
+                  cartItems = cartItems, 
+                  walletBalance = walletBalance,
+                  onRemoveItem = { viewModel.removeFromCart(it) },
+                  onUpdateQuantity = { id, q -> viewModel.updateCartQuantity(id, q) },
+                  onProductClick = { pid -> navController.navigate(Screen.ProductDetails.createRoute(brand.id, pid)) },
+                  onCheckout = { navController.navigate(Screen.Checkout.createRoute(brand.id)) }
+                )
+            }
+            currentRoute.contains("/history") -> {
+                HistoryScreen()
+            }
+            else -> {
+                BrandScreen(
+                    brand = brand, 
+                    onAddToCart = { viewModel.addToCart(it) },
+                    onProductClick = { pid -> navController.navigate(Screen.ProductDetails.createRoute(brand.id, pid)) }
+                )
             }
         }
-      }
     }
   }
 }
