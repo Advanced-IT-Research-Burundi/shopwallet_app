@@ -58,20 +58,10 @@ fun BrandMainScreen(
     navController: NavHostController,
     viewModel: BrandViewModel
 ) {
-  val cartItems by viewModel.cartItems.collectAsState()
-  val walletBalance by viewModel.walletBalance.collectAsState()
-
-  val isProductSelected = currentRoute.contains("/product/")
-  val isTopUpSelected = currentRoute.contains("/topup")
-  val isCheckoutSelected = currentRoute.contains("/checkout")
-  val isBrandSelected = true
+  val walletState by viewModel.walletState.collectAsState()
 
   val title = when {
-      isCheckoutSelected -> "Confirm Purchase"
-      isTopUpSelected -> "Top Up Wallet"
-      isProductSelected -> "Product Details"
       currentRoute.contains("/wallet") -> "My Wallet"
-      currentRoute.contains("/cart") -> "My Cart"
       currentRoute.contains("/history") -> "History"
       else -> brand.name
   }
@@ -84,78 +74,35 @@ fun BrandMainScreen(
           navController.popBackStack()
       },
       bottomBar = {
-        if (!isProductSelected && !isTopUpSelected && !isCheckoutSelected) {
-             BottomNavBar(
-              selectedRoute = currentRoute,
-              onItemSelected = { screen ->
-                  navController.navigate(screen.route.replace("{brandId}", brand.id)) {
-                      popUpTo(Screen.BrandDetails.createRoute(brand.id)) {
-                          saveState = true
-                      }
-                      launchSingleTop = true
-                      restoreState = true
+        BottomNavBar(
+          selectedRoute = currentRoute,
+          onItemSelected = { screen ->
+              navController.navigate(screen.route.replace("{brandId}", brand.id)) {
+                  popUpTo(Screen.BrandDetails.createRoute(brand.id)) {
+                      saveState = true
                   }
+                  launchSingleTop = true
+                  restoreState = true
               }
-            )
-        }
+          }
+        )
       }
     ) {
         when {
-            isCheckoutSelected -> {
-                val total = cartItems.sumOf { it.product.price * it.quantity } * 1.10
-                CheckoutConfirmationScreen(
-                    total = total,
-                    walletBalance = walletBalance,
-                    onConfirm = {
-                        viewModel.confirmPurchase(total)
-                        navController.navigate(Screen.History.createRoute(brand.id)) {
-                            popUpTo(Screen.BrandDetails.createRoute(brand.id)) { inclusive = false }
-                        }
-                    },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            isTopUpSelected -> {
-                TopUpScreen(
-                    brand = brand,
-                    onTopUpSuccess = { amount ->
-                        viewModel.topUp(amount)
-                        navController.popBackStack()
-                    },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            isProductSelected -> {
-                ProductDetailsScreen(
-                    productId = productId ?: "",
-                    onAddToCart = { viewModel.addToCart(it) },
-                    onBack = { navController.popBackStack() }
-                )
-            }
             currentRoute.contains("/wallet") -> {
                 WalletScreen(
                     brand = brand,
-                    onTopUpClick = { navController.navigate(Screen.TopUp.createRoute(brand.id)) }
-                )
-            }
-            currentRoute.contains("/cart") -> {
-                CartScreen(
-                  cartItems = cartItems, 
-                  walletBalance = walletBalance,
-                  onRemoveItem = { viewModel.removeFromCart(it) },
-                  onUpdateQuantity = { id, q -> viewModel.updateCartQuantity(id, q) },
-                  onProductClick = { pid -> navController.navigate(Screen.ProductDetails.createRoute(brand.id, pid)) },
-                  onCheckout = { navController.navigate(Screen.Checkout.createRoute(brand.id)) }
+                    viewModel = viewModel
                 )
             }
             currentRoute.contains("/history") -> {
                 HistoryScreen()
             }
             else -> {
-                BrandScreen(
-                    brand = brand, 
-                    onAddToCart = { viewModel.addToCart(it) },
-                    onProductClick = { pid -> navController.navigate(Screen.ProductDetails.createRoute(brand.id, pid)) }
+                // Default to Wallet if route is unknown
+                WalletScreen(
+                    brand = brand,
+                    viewModel = viewModel
                 )
             }
         }

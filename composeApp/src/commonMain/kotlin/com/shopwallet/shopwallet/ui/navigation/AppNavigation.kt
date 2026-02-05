@@ -7,70 +7,36 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import androidx.compose.runtime.remember
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
-import com.shopwallet.shopwallet.ui.viewmodel.SecurityViewModel
+import com.shopwallet.shopwallet.ui.viewmodel.AuthViewModel
 import com.shopwallet.shopwallet.ui.auth.AuthScreen
 import com.shopwallet.shopwallet.ui.screens.BrandMainScreen
 import com.shopwallet.shopwallet.ui.screens.BrandsGrid
-import com.shopwallet.shopwallet.ui.screens.PinScreen
-import com.shopwallet.shopwallet.data.local.AppPreferenceManager
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.LaunchedEffect
-import org.jetbrains.compose.resources.stringResource
-import shopwallet.composeapp.generated.resources.Res
-import shopwallet.composeapp.generated.resources.label_brand
-import shopwallet.composeapp.generated.resources.label_cart
-import shopwallet.composeapp.generated.resources.label_history
-import shopwallet.composeapp.generated.resources.label_wallet
 
-import com.shopwallet.shopwallet.data.repository.AuthRepo
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import androidx.compose.runtime.collectAsState
 
 @Composable
 fun AppNavigation(
-  navController: NavHostController,
-  onExit: () -> Unit
+  navController: NavHostController
 ) {
-  val authRepo = koinInject<AuthRepo>()
-  val securityViewModel = koinViewModel<SecurityViewModel>()
+  val authViewModel = koinViewModel<AuthViewModel>()
 
   val navBackStackEntry by navController.currentBackStackEntryAsState()
   val currentRoute = navBackStackEntry?.destination?.route
 
-  val hasPinSet by securityViewModel.hasPinSet.collectAsState()
-  val isLocked by securityViewModel.isLocked.collectAsState()
-
-  // Security Layer
-  if (!hasPinSet && currentRoute != Screen.Auth.route) {
-      PinScreen(
-          title = "Setup PIN",
-          subtitle = "Create a 4-digit PIN to secure your wallet",
-          onPinSubmit = { pin -> securityViewModel.setPin(pin) }
-      )
-      return
-  }
-
-  if (isLocked) {
-      PinScreen(
-          title = "Welcome Back",
-          subtitle = "Enter your PIN to unlock",
-          onPinSubmit = { pin -> 
-              if (!securityViewModel.unlock(pin)) {
-                  // Handle wrong PIN
-              }
-          }
-      )
-      return
+  // Determine start destination
+  val startDestination = if (authViewModel.isLoggedIn()) {
+      Screen.Brands.route
+  } else {
+      Screen.Auth.route
   }
 
   NavHost(
     navController = navController,
-    startDestination = if(authRepo.getToken() != null) Screen.Brands.route else Screen.Auth.route
+    startDestination = startDestination
   ) {
     composable(Screen.Auth.route) {
       AuthScreen {

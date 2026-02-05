@@ -25,32 +25,22 @@ import com.shopwallet.shopwallet.data.model.Transaction
 import com.shopwallet.shopwallet.data.model.TransactionType
 import com.shopwallet.shopwallet.ui.theme.LocalBrandColor
 import com.shopwallet.shopwallet.utils.CurrencyFormat
-
-import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
-import androidx.compose.runtime.collectAsState
 import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
 
 @Composable
-fun WalletScreen(brand: Brand, onTopUpClick: () -> Unit) {
-    val viewModel = koinViewModel<BrandViewModel>(key = brand.id) { parametersOf(brand.id) }
+fun WalletScreen(brand: Brand, viewModel: BrandViewModel) {
     val brandColor = LocalBrandColor.current
     var isAmountVisible by remember { mutableStateOf(true) }
     
-    val walletBalance by viewModel.walletBalance.collectAsState()
+    val walletState by viewModel.walletState.collectAsState()
     
-    // Transactions would ideally come from a proper TransactionViewModel or WalletRepo
-    val transactions = listOf(
-        Transaction("1", "Purchase at ${brand.name}", -45000.00, "Today, 2:30 PM", TransactionType.PURCHASE),
-        Transaction("2", "Wallet Top-up", 100000.00, "Yesterday, 10:15 AM", TransactionType.TOPUP),
-        Transaction("3", "Refund - Order #1234", 25500.50, "Feb 2, 2024", TransactionType.REFUND),
-        Transaction("4", "Purchase at ${brand.name}", -12500.99, "Feb 1, 2024", TransactionType.PURCHASE),
-        Transaction("5", "Wallet Top-up", 50000.00, "Jan 28, 2024", TransactionType.TOPUP)
-    )
+    // Get balance and transactions from wallet state
+    val walletBalance = walletState.data?.balance ?: 0.0
+    val transactions = walletState.data?.transactions ?: emptyList()
     
     val monthlyTransactions = transactions.filter { it.date.contains("Today") || it.date.contains("Yesterday") || it.date.contains("Feb") }
-    val monthlyOrders = monthlyTransactions.count { it.type == TransactionType.PURCHASE }
-    val monthlyExpenses = monthlyTransactions.filter { it.type == TransactionType.PURCHASE }.sumOf { kotlin.math.abs(it.amount) }
+    val monthlyOrders = monthlyTransactions.count { it.type == TransactionType.PURCHASE.name }
+    val monthlyExpenses = monthlyTransactions.filter { it.type == TransactionType.PURCHASE.name }.sumOf { kotlin.math.abs(it.amount) }
 
     LazyColumn(
         modifier = Modifier
@@ -68,7 +58,6 @@ fun WalletScreen(brand: Brand, onTopUpClick: () -> Unit) {
                 onToggleVisibility = { isAmountVisible = !isAmountVisible },
                 monthlyOrders = monthlyOrders,
                 monthlyExpenses = monthlyExpenses,
-                onTopUpClick = onTopUpClick
             )
         }
 
@@ -89,7 +78,8 @@ fun WalletScreen(brand: Brand, onTopUpClick: () -> Unit) {
 
         itemsIndexed(transactions) { index, transaction ->
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                TransactionItem(transaction = transaction)
+                TransactionItem(transaction = Transaction(transaction.id, transaction.type, transaction.amount, transaction.date,
+                    TransactionType.PURCHASE))
                 if (index < transactions.size - 1) {
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 4.dp),
@@ -111,7 +101,6 @@ fun WalletDashboardHeader(
     onToggleVisibility: () -> Unit,
     monthlyOrders: Int,
     monthlyExpenses: Double,
-    onTopUpClick: () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),

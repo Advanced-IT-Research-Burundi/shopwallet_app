@@ -11,6 +11,8 @@ import com.shopwallet.shopwallet.data.repository.BrandRepo
 import com.shopwallet.shopwallet.data.repository.BrandRepoImpl
 import com.shopwallet.shopwallet.data.repository.WalletRepo
 import com.shopwallet.shopwallet.data.repository.WalletRepoImpl
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.DEFAULT
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
@@ -19,6 +21,7 @@ val appModule = module {
     single { AppPreferenceManager(get()) }
     
     single<HttpClient> {
+        val prefs = get<AppPreferenceManager>()
         HttpClient {
             install(ContentNegotiation) {
                 json(Json {
@@ -26,6 +29,21 @@ val appModule = module {
                     prettyPrint = true
                     isLenient = true
                 })
+            }
+            
+            install(io.ktor.client.plugins.logging.Logging) {
+                logger = io.ktor.client.plugins.logging.Logger.DEFAULT
+                level = io.ktor.client.plugins.logging.LogLevel.INFO
+            }
+            
+            defaultRequest {
+                url("https://shopping-wallet.advanceditb.com/api/")
+                
+                // Add auth token if available
+                val token = prefs.authToken
+                if (!token.isNullOrEmpty()) {
+                    headers.append("Authorization", "Bearer $token")
+                }
             }
         }
     }

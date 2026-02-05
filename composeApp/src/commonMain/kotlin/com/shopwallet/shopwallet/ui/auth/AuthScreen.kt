@@ -30,16 +30,25 @@ fun AuthScreen(
     onAuthenticated: () -> Unit
 ) {
     val viewModel = koinViewModel<AuthViewModel>()
-    val loginState by viewModel.loginState.collectAsState()
+    val otpRequestState by viewModel.otpRequestState.collectAsState()
+    val verifyOtpState by viewModel.verifyOtpState.collectAsState()
     val currentUser by viewModel.currentUser.collectAsState()
 
     var step by remember { mutableStateOf(AuthStep.PHONE) }
     var phoneNumber by remember { mutableStateOf("") }
     var otpCode by remember { mutableStateOf("") }
 
-    LaunchedEffect(currentUser) {
-        if (currentUser != null) {
+    // Navigate on successful verification
+    LaunchedEffect(verifyOtpState.data) {
+        if (verifyOtpState.data != null) {
             onAuthenticated()
+        }
+    }
+    
+    // Move to OTP step on successful request
+    LaunchedEffect(otpRequestState.data) {
+        if (otpRequestState.data?.success == true) {
+            step = AuthStep.OTP
         }
     }
 
@@ -59,9 +68,10 @@ fun AuthScreen(
             verticalArrangement = Arrangement.Center
         ) {
             // Error Message
-            if (loginState.error != null) {
+            val errorMessage = if (step == AuthStep.PHONE) otpRequestState.error else verifyOtpState.error
+            if (errorMessage != null) {
                 Text(
-                    text = loginState.error!!,
+                    text = errorMessage,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(bottom = 16.dp)
@@ -75,7 +85,8 @@ fun AuthScreen(
                 color = MaterialTheme.colorScheme.primary
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    if (loginState.isLoading) {
+                    val isLoading = if (step == AuthStep.PHONE) otpRequestState.isLoading else verifyOtpState.isLoading
+                    if (isLoading) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
                     } else {
                         Icon(
@@ -117,9 +128,10 @@ fun AuthScreen(
                     onPhoneChange = { phoneNumber = it },
                     onContinue = {
                         if (phoneNumber.length == 8) {
-                            step = AuthStep.OTP
+                            viewModel.requestOtp(phoneNumber)
                         }
-                    }
+                    },
+                    isLoading = otpRequestState.isLoading
                 )
             } else {
                 OtpInputStep(
@@ -127,10 +139,14 @@ fun AuthScreen(
                     onOtpChange = { otpCode = it },
                     onVerify = {
                         if (otpCode.length == 6) {
-                            viewModel.login(phoneNumber, "1234") // Mock PIN for OTP flow
+                            viewModel.verifyOtp(phoneNumber, otpCode)
                         }
                     },
-                    onChangePhone = { step = AuthStep.PHONE }
+                    onChangePhone = { 
+                        step = AuthStep.PHONE
+                        otpCode = ""
+                    },
+                    isLoading = verifyOtpState.isLoading
                 )
             }
 
@@ -150,7 +166,8 @@ fun AuthScreen(
 fun PhoneInputStep(
     phoneNumber: String,
     onPhoneChange: (String) -> Unit,
-    onContinue: () -> Unit
+    onContinue: () -> Unit,
+    isLoading: Boolean = false
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -170,9 +187,16 @@ fun PhoneInputStep(
         ShopButton(
             onClick = onContinue,
             modifier = Modifier.fillMaxWidth().height(48.dp),
-            enabled = phoneNumber.length == 8
+            enabled = phoneNumber.length == 8 && !isLoading
         ) {
-            Text("Continue")
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text("Continue")
+            }
         }
     }
 }
@@ -182,7 +206,8 @@ fun OtpInputStep(
     otpCode: String,
     onOtpChange: (String) -> Unit,
     onVerify: () -> Unit,
-    onChangePhone: () -> Unit
+    onChangePhone: () -> Unit,
+    isLoading: Boolean = false
 ) {
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -214,9 +239,16 @@ fun OtpInputStep(
         ShopButton(
             onClick = onVerify,
             modifier = Modifier.fillMaxWidth().height(48.dp),
-            enabled = otpCode.length == 6
+            enabled = otpCode.length == 6 && !isLoading
         ) {
-            Text("Verify & Continue")
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text("Verify & Continue")
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
