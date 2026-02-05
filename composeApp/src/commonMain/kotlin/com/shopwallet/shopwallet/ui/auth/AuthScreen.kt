@@ -21,13 +21,27 @@ import com.shopwallet.shopwallet.ui.components.ShopButton
 import com.shopwallet.shopwallet.ui.components.ShopButtonVariant
 import com.shopwallet.shopwallet.ui.components.ShopInput
 
+import com.shopwallet.shopwallet.ui.viewmodel.AuthViewModel
+import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.runtime.collectAsState
+
 @Composable
 fun AuthScreen(
     onAuthenticated: () -> Unit
 ) {
+    val viewModel = koinViewModel<AuthViewModel>()
+    val loginState by viewModel.loginState.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
+
     var step by remember { mutableStateOf(AuthStep.PHONE) }
     var phoneNumber by remember { mutableStateOf("") }
     var otpCode by remember { mutableStateOf("") }
+
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            onAuthenticated()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -38,36 +52,50 @@ fun AuthScreen(
     ) {
         Column(
             modifier = Modifier
-                .widthIn(max = 400.dp) // Max-w-sm in React ~ 24rem = 384px.
+                .widthIn(max = 400.dp)
                 .padding(24.dp)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Error Message
+            if (loginState.error != null) {
+                Text(
+                    text = loginState.error!!,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
+
             // Logo & Title
             Surface(
                 modifier = Modifier.size(64.dp),
-                shape = RoundedCornerShape(16.dp), // rounded-2xl
+                shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.primary
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Default.PhoneAndroid,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(32.dp)
-                    )
+                    if (loginState.isLoading) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.PhoneAndroid,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp)) // mb-4 on logo div + space-y-3
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = "Shop Wallet",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 28.sp,
-                    letterSpacing = (-0.5).sp // tracking-tight
+                    letterSpacing = (-0.5).sp
                 ),
                 color = MaterialTheme.colorScheme.onBackground
             )
@@ -77,11 +105,11 @@ fun AuthScreen(
             Text(
                 text = if (step == AuthStep.PHONE) "Enter your phone number to get started" else "Enter the verification code sent to your phone",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant, // text-muted-foreground
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(32.dp)) // space-y-8 separates header from inputs
+            Spacer(modifier = Modifier.height(32.dp))
 
             if (step == AuthStep.PHONE) {
                 PhoneInputStep(
@@ -98,9 +126,8 @@ fun AuthScreen(
                     otpCode = otpCode,
                     onOtpChange = { otpCode = it },
                     onVerify = {
-                        // Mimic verification: accept any OTP
                         if (otpCode.length == 6) {
-                            onAuthenticated()
+                            viewModel.login(phoneNumber, "1234") // Mock PIN for OTP flow
                         }
                     },
                     onChangePhone = { step = AuthStep.PHONE }

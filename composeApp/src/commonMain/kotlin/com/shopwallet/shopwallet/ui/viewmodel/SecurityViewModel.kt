@@ -1,22 +1,22 @@
 package com.shopwallet.shopwallet.ui.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
 import com.shopwallet.shopwallet.data.local.AppPreferenceManager
+import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
-class SecurityViewModel(private val prefs: AppPreferenceManager) : ViewModel() {
+class SecurityViewModel(private val prefs: AppPreferenceManager) : androidx.lifecycle.ViewModel() {
 
-    var isLocked by mutableStateOf(false)
-        private set
+    private val _isLocked = MutableStateFlow(false)
+    val isLocked = _isLocked.asStateFlow()
 
-    var hasPinSet by mutableStateOf(prefs.userPin != null)
-        private set
+    private val _hasPinSet = MutableStateFlow(prefs.userPin != null)
+    val hasPinSet = _hasPinSet.asStateFlow()
 
     fun onAppForegrounded() {
         if (prefs.shouldShowPinScreen()) {
-            isLocked = true
+            _isLocked.value = true
         }
     }
 
@@ -26,7 +26,7 @@ class SecurityViewModel(private val prefs: AppPreferenceManager) : ViewModel() {
 
     fun unlock(pin: String): Boolean {
         return if (prefs.userPin == pin) {
-            isLocked = false
+            _isLocked.value = false
             prefs.updateLastActiveTime()
             true
         } else {
@@ -36,8 +36,8 @@ class SecurityViewModel(private val prefs: AppPreferenceManager) : ViewModel() {
 
     fun setPin(pin: String) {
         prefs.userPin = pin
-        hasPinSet = true
-        isLocked = false
+        _hasPinSet.value = true
+        _isLocked.value = false
         prefs.updateLastActiveTime()
     }
 }

@@ -26,11 +26,20 @@ import com.shopwallet.shopwallet.data.model.TransactionType
 import com.shopwallet.shopwallet.ui.theme.LocalBrandColor
 import com.shopwallet.shopwallet.utils.CurrencyFormat
 
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
+import androidx.compose.runtime.collectAsState
+import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
+
 @Composable
 fun WalletScreen(brand: Brand, onTopUpClick: () -> Unit) {
+    val viewModel = koinViewModel<BrandViewModel>(key = brand.id) { parametersOf(brand.id) }
     val brandColor = LocalBrandColor.current
     var isAmountVisible by remember { mutableStateOf(true) }
     
+    val walletBalance by viewModel.walletBalance.collectAsState()
+    
+    // Transactions would ideally come from a proper TransactionViewModel or WalletRepo
     val transactions = listOf(
         Transaction("1", "Purchase at ${brand.name}", -45000.00, "Today, 2:30 PM", TransactionType.PURCHASE),
         Transaction("2", "Wallet Top-up", 100000.00, "Yesterday, 10:15 AM", TransactionType.TOPUP),
@@ -53,7 +62,7 @@ fun WalletScreen(brand: Brand, onTopUpClick: () -> Unit) {
         item {
             WalletDashboardHeader(
                 brand = brand,
-                balance = 124500.50,
+                balance = walletBalance,
                 brandColor = brandColor,
                 isAmountVisible = isAmountVisible,
                 onToggleVisibility = { isAmountVisible = !isAmountVisible },

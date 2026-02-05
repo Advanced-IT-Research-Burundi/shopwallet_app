@@ -10,12 +10,8 @@ class MainActivity : ComponentActivity() {
     enableEdgeToEdge()
     super.onCreate(savedInstanceState)
 
-    val settings = com.russhwolf.settings.SharedPreferencesSettings(
-        getSharedPreferences("shopwallet_prefs", android.content.Context.MODE_PRIVATE)
-    )
-
     setContent {
-      App(settings)
+      App()
     }
   }
 }

@@ -4,28 +4,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.compose.rememberNavController
 import com.shopwallet.shopwallet.ui.navigation.AppNavigation
 import com.shopwallet.shopwallet.ui.theme.ShopWalletTheme
-
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import com.shopwallet.shopwallet.data.local.AppPreferenceManager
 import com.shopwallet.shopwallet.ui.viewmodel.SecurityViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.russhwolf.settings.Settings
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun App(settings: Settings) {
+fun App() {
   val navController = rememberNavController()
-  val prefs = remember(settings) { AppPreferenceManager(settings) }
+  val securityViewModel = koinViewModel<SecurityViewModel>()
   
   val lifecycleOwner = LocalLifecycleOwner.current
-  val securityViewModel: SecurityViewModel = viewModel { SecurityViewModel(prefs) }
+  val isLocked by securityViewModel.isLocked.collectAsState()
 
   DisposableEffect(lifecycleOwner) {
     val observer = LifecycleEventObserver { _, event ->
@@ -46,7 +44,7 @@ fun App(settings: Settings) {
       modifier = Modifier.fillMaxSize(),
       color = MaterialTheme.colorScheme.background
     ) {
-      AppNavigation(navController, prefs, securityViewModel, onExit = {})
+      AppNavigation(navController, onExit = {})
     }
   }
 }

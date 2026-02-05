@@ -25,19 +25,28 @@ import shopwallet.composeapp.generated.resources.label_cart
 import shopwallet.composeapp.generated.resources.label_history
 import shopwallet.composeapp.generated.resources.label_wallet
 
+import com.shopwallet.shopwallet.data.repository.AuthRepo
+import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
+import androidx.compose.runtime.collectAsState
+
 @Composable
 fun AppNavigation(
   navController: NavHostController,
-  prefs: AppPreferenceManager,
-  securityViewModel: SecurityViewModel,
   onExit: () -> Unit
 ) {
+  val authRepo = koinInject<AuthRepo>()
+  val securityViewModel = koinViewModel<SecurityViewModel>()
 
   val navBackStackEntry by navController.currentBackStackEntryAsState()
   val currentRoute = navBackStackEntry?.destination?.route
 
+  val hasPinSet by securityViewModel.hasPinSet.collectAsState()
+  val isLocked by securityViewModel.isLocked.collectAsState()
+
   // Security Layer
-  if (!securityViewModel.hasPinSet && currentRoute != Screen.Auth.route) {
+  if (!hasPinSet && currentRoute != Screen.Auth.route) {
       PinScreen(
           title = "Setup PIN",
           subtitle = "Create a 4-digit PIN to secure your wallet",
@@ -46,7 +55,7 @@ fun AppNavigation(
       return
   }
 
-  if (securityViewModel.isLocked) {
+  if (isLocked) {
       PinScreen(
           title = "Welcome Back",
           subtitle = "Enter your PIN to unlock",
@@ -61,11 +70,11 @@ fun AppNavigation(
 
   NavHost(
     navController = navController,
-    startDestination = if(prefs.isLoggedIn) Screen.Brands.route else Screen.Auth.route
+    startDestination = if(authRepo.getToken() != null) Screen.Brands.route else Screen.Auth.route
   ) {
     composable(Screen.Auth.route) {
       AuthScreen {
-        prefs.isLoggedIn = true
+        // Auth handled in AuthViewModel now, but for flow:
         navController.navigate(Screen.Brands.route) {
           popUpTo(Screen.Auth.route) { inclusive = true }
         }
@@ -91,32 +100,32 @@ fun AppNavigation(
     ) {
         composable(Screen.BrandDetails.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.BrandDetails.route, backStackEntry, prefs)
+            BrandContainer(brandId, navController, Screen.BrandDetails.route)
         }
         composable(Screen.Wallet.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.Wallet.route, backStackEntry, prefs)
+            BrandContainer(brandId, navController, Screen.Wallet.route)
         }
         composable(Screen.Cart.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.Cart.route, backStackEntry, prefs)
+            BrandContainer(brandId, navController, Screen.Cart.route)
         }
         composable(Screen.History.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.History.route, backStackEntry, prefs)
+            BrandContainer(brandId, navController, Screen.History.route)
         }
         composable(Screen.ProductDetails.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
             val productId = backStackEntry.arguments?.getString("productId")
-            BrandContainer(brandId, navController, Screen.ProductDetails.route, backStackEntry, prefs, productId)
+            BrandContainer(brandId, navController, Screen.ProductDetails.route, productId)
         }
         composable(Screen.TopUp.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.TopUp.route, backStackEntry, prefs)
+            BrandContainer(brandId, navController, Screen.TopUp.route)
         }
         composable(Screen.Checkout.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.Checkout.route, backStackEntry, prefs)
+            BrandContainer(brandId, navController, Screen.Checkout.route)
         }
     }
   }
@@ -127,19 +136,12 @@ fun BrandContainer(
     brandId: String?,
     navController: NavHostController,
     currentRoute: String,
-    backStackEntry: androidx.navigation.NavBackStackEntry,
-    prefs: AppPreferenceManager,
     productId: String? = null
 ) {
     val brand = brands.find { it.id == brandId } ?: return
     
-    // Get the ViewModel scoped to the nested graph
-    val parentEntry = remember(backStackEntry) {
-        navController.getBackStackEntry("brand_graph/{brandId}")
-    }
-    val viewModel: BrandViewModel = viewModel(parentEntry) {
-        BrandViewModel(brandId ?: "", prefs)
-    }
+    // Get the ViewModel scoped to this brandId
+    val viewModel = koinViewModel<BrandViewModel>(key = brandId) { parametersOf(brandId) }
     
     BrandMainScreen(
         brand = brand,

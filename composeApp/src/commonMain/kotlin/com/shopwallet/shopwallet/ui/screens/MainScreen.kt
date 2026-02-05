@@ -48,6 +48,8 @@ import com.shopwallet.shopwallet.ui.navigation.Screen
 import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 
+import androidx.compose.runtime.collectAsState
+
 @Composable
 fun BrandMainScreen(
     brand: Brand,
@@ -56,8 +58,8 @@ fun BrandMainScreen(
     navController: NavHostController,
     viewModel: BrandViewModel
 ) {
-  val cartItems = viewModel.cartItems
-  val walletBalance = viewModel.walletBalance
+  val cartItems by viewModel.cartItems.collectAsState()
+  val walletBalance by viewModel.walletBalance.collectAsState()
 
   val isProductSelected = currentRoute.contains("/product/")
   val isTopUpSelected = currentRoute.contains("/topup")
