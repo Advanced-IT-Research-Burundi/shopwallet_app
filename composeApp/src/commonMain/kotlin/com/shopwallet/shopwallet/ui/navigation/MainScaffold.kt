@@ -144,7 +144,19 @@ fun BottomNavBar(
               textAlign = TextAlign.Center
             ) 
           },
-          selected = selectedRoute == screen.route,
+          selected = when(screen) {
+            BottomNavScreen.Wallet -> selectedRoute?.contains("/wallet") == true
+            BottomNavScreen.Cart -> selectedRoute?.contains("/cart") == true
+            BottomNavScreen.History -> selectedRoute?.contains("/history") == true
+            BottomNavScreen.Brand -> selectedRoute?.contains("brand/") == true && 
+                                    !selectedRoute.contains("/wallet") && 
+                                    !selectedRoute.contains("/cart") && 
+                                    !selectedRoute.contains("/history") &&
+                                    !selectedRoute.contains("/product") &&
+                                    !selectedRoute.contains("/topup") &&
+                                    !selectedRoute.contains("/checkout")
+            else -> false
+          },
           onClick = { onItemSelected(screen) },
           colors = NavigationBarItemDefaults.colors(
             indicatorColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
