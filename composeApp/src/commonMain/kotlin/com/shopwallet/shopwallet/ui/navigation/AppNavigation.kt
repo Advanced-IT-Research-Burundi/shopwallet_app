@@ -29,13 +29,12 @@ import shopwallet.composeapp.generated.resources.label_wallet
 fun AppNavigation(
   navController: NavHostController,
   prefs: AppPreferenceManager,
+  securityViewModel: SecurityViewModel,
   onExit: () -> Unit
 ) {
 
   val navBackStackEntry by navController.currentBackStackEntryAsState()
   val currentRoute = navBackStackEntry?.destination?.route
-
-  val securityViewModel: SecurityViewModel = viewModel { SecurityViewModel(prefs) }
 
   // Security Layer
   if (!securityViewModel.hasPinSet && currentRoute != Screen.Auth.route) {
@@ -60,17 +59,13 @@ fun AppNavigation(
       return
   }
 
-  // Lifecycle-like check (simplified for KMP)
-  LaunchedEffect(currentRoute) {
-      securityViewModel.onAppForegrounded()
-  }
-
   NavHost(
     navController = navController,
-    startDestination = Screen.Auth.route
+    startDestination = if(prefs.isLoggedIn) Screen.Brands.route else Screen.Auth.route
   ) {
     composable(Screen.Auth.route) {
       AuthScreen {
+        prefs.isLoggedIn = true
         navController.navigate(Screen.Brands.route) {
           popUpTo(Screen.Auth.route) { inclusive = true }
         }

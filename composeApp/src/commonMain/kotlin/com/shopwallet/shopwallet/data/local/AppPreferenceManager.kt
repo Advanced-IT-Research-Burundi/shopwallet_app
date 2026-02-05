@@ -4,9 +4,8 @@ import com.russhwolf.settings.Settings
 import com.shopwallet.shopwallet.data.model.CartItem
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlin.time.Clock
+import kotlinx.datetime.Clock
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.TimeSource
 
 /**
  * AppPreferenceManager handles all local persistence logic.
@@ -60,26 +59,18 @@ class AppPreferenceManager(val settings: Settings) {
             else settings.remove(KEY_USER_PIN)
         }
 
-    /**
-     * Gets current monotonic time in milliseconds.
-     * This represents time passed since the device started.
-     */
-    private fun currentMonotonicMs(): Long =
-        TimeSource.Monotonic.markNow().elapsedNow().inWholeMilliseconds
-
     fun updateLastActiveTime() {
-        // Save the current "tick" count
-        settings.putLong(KEY_LAST_ACTIVE_TIME, currentMonotonicMs())
+        settings.putLong(KEY_LAST_ACTIVE_TIME, Clock.System.now().toEpochMilliseconds())
     }
 
     fun shouldShowPinScreen(): Boolean {
         if (userPin == null) return false
 
-        val lastActiveTick = settings.getLong(KEY_LAST_ACTIVE_TIME, 0L)
-        if (lastActiveTick == 0L) return true
+        val lastActiveMs = settings.getLong(KEY_LAST_ACTIVE_TIME, 0L)
+        if (lastActiveMs == 0L) return true
 
-        val currentTick = currentMonotonicMs()
-        val diff = currentTick - lastActiveTick
+        val now = Clock.System.now().toEpochMilliseconds()
+        val diff = now - lastActiveMs
 
         // Use .minutes for readability
         return diff > 5.minutes.inWholeMilliseconds

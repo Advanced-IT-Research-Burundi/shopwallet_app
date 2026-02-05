@@ -13,6 +13,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.shopwallet.shopwallet.data.local.AppPreferenceManager
+import com.shopwallet.shopwallet.ui.viewmodel.SecurityViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.russhwolf.settings.Settings
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -23,11 +25,14 @@ fun App(settings: Settings) {
   val prefs = remember(settings) { AppPreferenceManager(settings) }
   
   val lifecycleOwner = LocalLifecycleOwner.current
+  val securityViewModel: SecurityViewModel = viewModel { SecurityViewModel(prefs) }
 
   DisposableEffect(lifecycleOwner) {
     val observer = LifecycleEventObserver { _, event ->
         if (event == Lifecycle.Event.ON_STOP) {
-            prefs.updateLastActiveTime()
+            securityViewModel.onAppBackgrounded()
+        } else if (event == Lifecycle.Event.ON_RESUME) {
+            securityViewModel.onAppForegrounded()
         }
     }
     lifecycleOwner.lifecycle.addObserver(observer)
@@ -41,7 +46,7 @@ fun App(settings: Settings) {
       modifier = Modifier.fillMaxSize(),
       color = MaterialTheme.colorScheme.background
     ) {
-      AppNavigation(navController, prefs, onExit = {})
+      AppNavigation(navController, prefs, securityViewModel, onExit = {})
     }
   }
 }
