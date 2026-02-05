@@ -7,12 +7,19 @@ import androidx.lifecycle.ViewModel
 import com.shopwallet.shopwallet.data.model.CartItem
 import com.shopwallet.shopwallet.data.model.Product
 
-class BrandViewModel : ViewModel() {
-    var cartItems by mutableStateOf(listOf<CartItem>())
+class BrandViewModel(
+    private val brandId: String,
+    private val prefs: com.shopwallet.shopwallet.data.local.AppPreferenceManager
+) : ViewModel() {
+    var cartItems by mutableStateOf(prefs.getCart(brandId))
         private set
     
     var walletBalance by mutableStateOf(124500.50)
         private set
+
+    private fun persistCart() {
+        prefs.saveCart(brandId, cartItems)
+    }
 
     fun addToCart(product: Product) {
         val existingItem = cartItems.find { it.product.id == product.id }
@@ -23,10 +30,12 @@ class BrandViewModel : ViewModel() {
         } else {
             cartItems = cartItems + CartItem(product)
         }
+        persistCart()
     }
 
     fun removeFromCart(productId: String) {
         cartItems = cartItems.filter { it.product.id != productId }
+        persistCart()
     }
 
     fun updateCartQuantity(productId: String, newQuantity: Int) {
@@ -37,6 +46,7 @@ class BrandViewModel : ViewModel() {
                 if (it.product.id == productId) it.copy(quantity = newQuantity) else it
             }
         }
+        persistCart()
     }
 
     fun topUp(amount: Double) {
@@ -46,5 +56,7 @@ class BrandViewModel : ViewModel() {
     fun confirmPurchase(total: Double) {
         walletBalance -= total
         cartItems = emptyList()
+        persistCart()
     }
 }
+

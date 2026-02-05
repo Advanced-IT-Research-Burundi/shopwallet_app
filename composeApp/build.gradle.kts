@@ -56,9 +56,16 @@ kotlin {
       // Coil
       implementation(libs.coil.compose)
       implementation(libs.coil.network.ktor3)
+
+      // Settings
+      implementation(libs.multiplatform.settings)
+      implementation(libs.multiplatform.settings.serialization)
+      
+      // Datetime
+      implementation(libs.kotlinx.datetime)
     }
     iosMain.dependencies {
-
+      implementation(libs.ktor.client.darwin)
     }
     commonTest.dependencies {
       implementation(libs.kotlin.test)

@@ -17,6 +17,8 @@ navigationCompose = "2.8.0-alpha10"
 coil3 = "3.0.4"
 ktor = "3.0.0"
 kotlinxSerialization = "1.7.3"
+multiplatformSettings = "1.2.0"
+kotlinxDatetime = "0.6.1"
 
 
 
@@ -54,6 +56,14 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 
 # Serialization
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+
+# Settings
+multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
+multiplatform-settings-no-arg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }
+multiplatform-settings-serialization = { module = "com.russhwolf:multiplatform-settings-serialization", version.ref = "multiplatformSettings" }
+
+# Datetime
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

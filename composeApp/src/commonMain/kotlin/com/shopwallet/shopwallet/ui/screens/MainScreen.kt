@@ -54,7 +54,7 @@ fun BrandMainScreen(
     currentRoute: String,
     productId: String? = null,
     navController: NavHostController,
-    viewModel: com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel = androidx.lifecycle.viewmodel.compose.viewModel { com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel() }
+    viewModel: BrandViewModel
 ) {
   val cartItems = viewModel.cartItems
   val walletBalance = viewModel.walletBalance
