@@ -2,6 +2,7 @@ package com.shopwallet.shopwallet.di
 
 import com.russhwolf.settings.Settings
 import com.shopwallet.shopwallet.data.local.AppPreferenceManager
+import com.shopwallet.shopwallet.data.remote.AuthClient
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
@@ -47,6 +48,7 @@ val appModule = module {
             }
         }
     }
+    single { AuthClient(get(), get()) }
     
     // Repositories
     single<AuthRepo> { AuthRepoImpl(get(), get()) }

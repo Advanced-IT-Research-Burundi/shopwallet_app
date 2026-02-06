@@ -13,7 +13,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
-class KtorClient(private val client: HttpClient, private val baseUrl: String) {
+class AuthClient(private val client: HttpClient, private val baseUrl: String) {
   suspend fun requestOtp(phone: String): Result<OtpResponse> {
       return try {
         val response = client.post("auth/request-otp") {

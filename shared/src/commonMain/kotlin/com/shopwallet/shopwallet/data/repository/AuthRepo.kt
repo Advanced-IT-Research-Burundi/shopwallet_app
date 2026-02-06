@@ -2,10 +2,7 @@ package com.shopwallet.shopwallet.data.repository
 
 import com.shopwallet.shopwallet.data.local.AppPreferenceManager
 import com.shopwallet.shopwallet.data.model.*
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import io.ktor.http.*
+import com.shopwallet.shopwallet.data.remote.AuthClient
 
 interface AuthRepo {
     suspend fun requestOtp(phone: String): Result<OtpResponse>
@@ -18,56 +15,31 @@ interface AuthRepo {
 }
 
 class AuthRepoImpl(
-    private val client: HttpClient,
-    private val prefs: AppPreferenceManager
+    private val client: AuthClient,
+    private val prefs: AppPreferenceManager,
 ) : AuthRepo {
     
     override suspend fun requestOtp(phone: String): Result<OtpResponse> {
-        return try {
-            val response = client.post("auth/request-otp") {
-                contentType(ContentType.Application.Json)
-                setBody(OtpRequest(phone))
-            }.body<OtpResponse>()
-            Result.success(response)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+       return client.requestOtp(phone)
     }
     
     override suspend fun verifyOtp(phone: String, otp: String): Result<VerifyOtpResponse> {
-        return try {
-            val response = client.post("auth/verify-otp") {
-                contentType(ContentType.Application.Json)
-                setBody(VerifyOtpRequest(phone, otp))
-            }.body<VerifyOtpResponse>()
-            
-            // Save token on successful verification
+        val result = client.verifyOtp(phone, otp)
+        result.onSuccess { response ->
             saveToken(response.token)
-            
-            Result.success(response)
-        } catch (e: Exception) {
-            Result.failure(e)
         }
+        return result
     }
     
     override suspend fun getUser(): Result<UserResponse> {
-        return try {
-            val response = client.get("auth/user").body<UserResponse>()
-            Result.success(response)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        return client.getUser()
     }
     
     override suspend fun logout(): Result<Unit> {
-        return try {
-            client.post("auth/logout")
-            clearSession()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            clearSession() // Clear session even if API call fails
-            Result.failure(e)
-        }
+        val result = client.logout()
+        // Clear session regardless of API success/failure
+        clearSession()
+        return result
     }
     
     override fun getToken(): String? = prefs.authToken
