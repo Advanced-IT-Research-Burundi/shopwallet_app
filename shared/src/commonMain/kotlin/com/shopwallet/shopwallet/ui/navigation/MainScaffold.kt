@@ -40,8 +40,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
-import shopwallet.composeapp.generated.resources.Res
-import shopwallet.composeapp.generated.resources.action_back
+import shopwallet.shared.generated.resources.Res
+import shopwallet.shared.generated.resources.action_back
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

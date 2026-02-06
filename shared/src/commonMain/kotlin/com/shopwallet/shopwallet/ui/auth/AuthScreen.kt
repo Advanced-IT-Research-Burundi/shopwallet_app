@@ -24,7 +24,9 @@ import com.shopwallet.shopwallet.ui.components.ShopInput
 import com.shopwallet.shopwallet.ui.viewmodel.AuthViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.runtime.collectAsState
+import org.koin.core.annotation.KoinExperimentalAPI
 
+@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun AuthScreen(
     onAuthenticated: () -> Unit

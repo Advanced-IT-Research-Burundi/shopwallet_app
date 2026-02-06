@@ -1,10 +1,10 @@
 package com.shopwallet.shopwallet.ui.navigation
 
 import org.jetbrains.compose.resources.StringResource
-import shopwallet.composeapp.generated.resources.Res
-import shopwallet.composeapp.generated.resources.label_brand
-import shopwallet.composeapp.generated.resources.label_history
-import shopwallet.composeapp.generated.resources.label_wallet
+import shopwallet.shared.generated.resources.Res
+import shopwallet.shared.generated.resources.label_brand
+import shopwallet.shared.generated.resources.label_history
+import shopwallet.shared.generated.resources.label_wallet
 
 
 sealed class Screen(val route: String) {

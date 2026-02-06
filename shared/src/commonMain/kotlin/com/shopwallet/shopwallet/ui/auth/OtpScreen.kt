@@ -17,7 +17,9 @@ import androidx.compose.ui.unit.dp
 import com.shopwallet.shopwallet.ui.viewmodel.AuthViewModel
 import com.shopwallet.shopwallet.utils.UiState
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.annotation.KoinExperimentalAPI
 
+@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun OtpScreen(
     onNavigateToMain: () -> Unit,
