@@ -69,25 +69,9 @@ fun AppNavigation(
             val brandId = backStackEntry.arguments?.getString("brandId")
             BrandContainer(brandId, navController, Screen.Wallet.route)
         }
-        composable(Screen.Cart.route) { backStackEntry ->
-            val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.Cart.route)
-        }
         composable(Screen.History.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
             BrandContainer(brandId, navController, Screen.History.route)
-        }
-        composable(Screen.ProductDetails.route) { backStackEntry ->
-            val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.ProductDetails.route)
-        }
-        composable(Screen.TopUp.route) { backStackEntry ->
-            val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.TopUp.route)
-        }
-        composable(Screen.Checkout.route) { backStackEntry ->
-            val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.Checkout.route)
         }
     }
   }

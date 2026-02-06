@@ -47,8 +47,6 @@ import shopwallet.composeapp.generated.resources.action_back
 @Composable
 fun MainScaffold(
   title: String,
-  showBackButton: Boolean,
-  onBackClick: () -> Unit,
   snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   actions: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {},
   bottomBar: @Composable () -> Unit = {},
@@ -129,7 +127,6 @@ fun BottomNavBar(
         val icon = when(screen) {
           BottomNavScreen.Brand -> Icons.Filled.Storefront
           BottomNavScreen.Wallet -> Icons.Filled.AccountBalanceWallet
-          BottomNavScreen.Cart -> Icons.Filled.ShoppingCart
           BottomNavScreen.History -> Icons.Filled.History
         }
         
@@ -146,16 +143,10 @@ fun BottomNavBar(
           },
           selected = when(screen) {
             BottomNavScreen.Wallet -> selectedRoute?.contains("/wallet") == true
-            BottomNavScreen.Cart -> selectedRoute?.contains("/cart") == true
             BottomNavScreen.History -> selectedRoute?.contains("/history") == true
             BottomNavScreen.Brand -> selectedRoute?.contains("brand/") == true && 
                                     !selectedRoute.contains("/wallet") && 
-                                    !selectedRoute.contains("/cart") && 
-                                    !selectedRoute.contains("/history") &&
-                                    !selectedRoute.contains("/product") &&
-                                    !selectedRoute.contains("/topup") &&
-                                    !selectedRoute.contains("/checkout")
-            else -> false
+                                    !selectedRoute.contains("/history")
           },
           onClick = { onItemSelected(screen) },
           colors = NavigationBarItemDefaults.colors(
