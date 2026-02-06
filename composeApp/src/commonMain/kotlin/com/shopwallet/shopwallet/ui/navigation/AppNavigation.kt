@@ -47,8 +47,6 @@ fun AppNavigation(
     composable(Screen.Brands.route) {
       MainScaffold(
         title = "ShopWallet",
-        showBackButton = false,
-        onBackClick = {}
       ) {
         BrandsGrid(onBrandClick = { brand ->
           navController.navigate(Screen.BrandDetails.createRoute(brand.id))
