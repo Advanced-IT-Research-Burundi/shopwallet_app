@@ -39,8 +39,8 @@ fun WalletScreen(brand: Brand, viewModel: BrandViewModel) {
     val transactions = walletState.data?.transactions ?: emptyList()
     
     val monthlyTransactions = transactions.filter { it.date.contains("Today") || it.date.contains("Yesterday") || it.date.contains("Feb") }
-    val monthlyOrders = monthlyTransactions.count { it.type == TransactionType.PURCHASE.name }
-    val monthlyExpenses = monthlyTransactions.filter { it.type == TransactionType.PURCHASE.name }.sumOf { kotlin.math.abs(it.amount) }
+    val monthlyOrders = monthlyTransactions.count { it.type == TransactionType.PURCHASE }
+    val monthlyExpenses = monthlyTransactions.filter { it.type == TransactionType.PURCHASE }.sumOf { kotlin.math.abs(it.amount) }
 
     LazyColumn(
         modifier = Modifier
@@ -78,8 +78,7 @@ fun WalletScreen(brand: Brand, viewModel: BrandViewModel) {
 
         itemsIndexed(transactions) { index, transaction ->
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                TransactionItem(transaction = Transaction(transaction.id, transaction.type, transaction.amount, transaction.date,
-                    TransactionType.PURCHASE))
+                TransactionItem(transaction = transaction)
                 if (index < transactions.size - 1) {
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 4.dp),
@@ -319,7 +318,7 @@ fun TransactionItem(transaction: Transaction) {
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = transaction.title,
+                text = transaction.description,
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.onSurface
             )

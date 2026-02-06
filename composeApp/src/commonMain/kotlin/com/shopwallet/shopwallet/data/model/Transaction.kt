@@ -1,21 +1,28 @@
 package com.shopwallet.shopwallet.data.model
 
-import androidx.compose.ui.graphics.vector.ImageVector
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@Serializable
 data class Transaction(
     val id: String,
-    val title: String,
+    val description: String,
     val amount: Double,
     val date: String,
     val type: TransactionType,
     val status: TransactionStatus = TransactionStatus.COMPLETED
 )
 
+@Serializable
 enum class TransactionType {
-    PURCHASE, TOPUP, REFUND
+    @SerialName("PURCHASE") PURCHASE,
+    @SerialName("TOPUP") TOPUP,
+    @SerialName("REFUND") REFUND
 }
 
+@Serializable
 enum class TransactionStatus {
-    PENDING, COMPLETED, FAILED
+    @SerialName("PENDING") PENDING,
+    @SerialName("COMPLETED") COMPLETED,
+    @SerialName("FAILED") FAILED
 }

@@ -40,7 +40,7 @@ fun HistoryScreen(
     val historyItems = walletState.data?.transactions ?: emptyList()
 
     val filteredItems = remember(selectedType) {
-        if (selectedType == null) historyItems else historyItems.filter { it.type == selectedType?.name }
+        if (selectedType == null) historyItems else historyItems.filter { it.type == selectedType }
     }
 
     Column(
@@ -166,7 +166,7 @@ fun HistoryItemRow(transaction: Transaction) {
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = transaction.title,
+                text = transaction.description,
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )

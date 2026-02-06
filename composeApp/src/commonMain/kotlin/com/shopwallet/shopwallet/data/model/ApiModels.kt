@@ -54,16 +54,7 @@ data class CompanyListResponse(
 data class WalletResponse(
     val balance: Double,
     val currency: String = "BIF",
-    val transactions: List<TransactionResponse> = emptyList()
-)
- 
-@Serializable
-data class TransactionResponse(
-    val id: String,
-    val description: String,
-    val amount: Double,
-    val date: String,
-    val type: String // "PURCHASE", "TOPUP", "REFUND"
+    val transactions: List<Transaction> = emptyList()
 )
 
 // Generic API Response

@@ -1,31 +1,28 @@
 package com.shopwallet.shopwallet.ui.navigation
+
 import com.shopwallet.shopwallet.data.brands
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
 import com.shopwallet.shopwallet.ui.viewmodel.AuthViewModel
 import com.shopwallet.shopwallet.ui.auth.AuthScreen
 import com.shopwallet.shopwallet.ui.screens.BrandMainScreen
 import com.shopwallet.shopwallet.ui.screens.BrandsGrid
 
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.parameter.parametersOf
 
+@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun AppNavigation(
   navController: NavHostController
 ) {
   val authViewModel = koinViewModel<AuthViewModel>()
-
-  val navBackStackEntry by navController.currentBackStackEntryAsState()
-  val currentRoute = navBackStackEntry?.destination?.route
 
   // Determine start destination
   val startDestination = if (authViewModel.isLoggedIn()) {
@@ -82,8 +79,7 @@ fun AppNavigation(
         }
         composable(Screen.ProductDetails.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
-            val productId = backStackEntry.arguments?.getString("productId")
-            BrandContainer(brandId, navController, Screen.ProductDetails.route, productId)
+            BrandContainer(brandId, navController, Screen.ProductDetails.route)
         }
         composable(Screen.TopUp.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
@@ -97,12 +93,12 @@ fun AppNavigation(
   }
 }
 
+@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun BrandContainer(
     brandId: String?,
     navController: NavHostController,
     currentRoute: String,
-    productId: String? = null
 ) {
     val brand = brands.find { it.id == brandId } ?: return
     
@@ -112,7 +108,6 @@ fun BrandContainer(
     BrandMainScreen(
         brand = brand,
         currentRoute = currentRoute,
-        productId = productId,
         navController = navController,
         viewModel = viewModel
     )

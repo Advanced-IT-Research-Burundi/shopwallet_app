@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.shopwallet.shopwallet.data.brands
 import com.shopwallet.shopwallet.data.model.Brand
-import com.shopwallet.shopwallet.data.model.CartItem
 import com.shopwallet.shopwallet.data.model.Product
 import com.shopwallet.shopwallet.ui.navigation.BottomNavBar
 import com.shopwallet.shopwallet.ui.navigation.BottomNavScreen
@@ -54,12 +53,9 @@ import androidx.compose.runtime.collectAsState
 fun BrandMainScreen(
     brand: Brand,
     currentRoute: String,
-    productId: String? = null,
     navController: NavHostController,
     viewModel: BrandViewModel
 ) {
-  val walletState by viewModel.walletState.collectAsState()
-
   val title = when {
       currentRoute.contains("/wallet") -> "My Wallet"
       currentRoute.contains("/history") -> "History"
