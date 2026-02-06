@@ -24,26 +24,23 @@ import com.shopwallet.shopwallet.data.model.Transaction
 import com.shopwallet.shopwallet.data.model.TransactionStatus
 import com.shopwallet.shopwallet.data.model.TransactionType
 import com.shopwallet.shopwallet.utils.CurrencyFormat
+import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.runtime.collectAsState
+import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
+import org.koin.core.annotation.KoinExperimentalAPI
 
+@OptIn(KoinExperimentalAPI::class)
 @Composable
-fun HistoryScreen() {
+fun HistoryScreen(
+    viewModel: BrandViewModel = koinViewModel()
+) {
     var selectedType by remember { mutableStateOf<TransactionType?>(null) }
+    val walletState by viewModel.walletState.collectAsState()
     
-    val historyItems = remember {
-        listOf(
-            Transaction("1", "Purchase at Nike", -25000.00, "Today, 10:45 AM", TransactionType.PURCHASE),
-            Transaction("2", "Wallet Top-up", 150000.00, "Yesterday, 3:20 PM", TransactionType.TOPUP),
-            Transaction("3", "Purchase at Tech Haven", -120000.00, "Feb 3, 2024", TransactionType.PURCHASE),
-            Transaction("4", "Refund - Shoes #992", 45000.00, "Feb 2, 2024", TransactionType.REFUND),
-            Transaction("5", "Purchase at Nike", -65000.00, "Feb 1, 2024", TransactionType.PURCHASE),
-            Transaction("6", "Wallet Top-up", 200000.00, "Jan 30, 2024", TransactionType.TOPUP),
-            Transaction("7", "Purchase at Local Store", -15000.00, "Jan 29, 2024", TransactionType.PURCHASE),
-            Transaction("8", "Refund - Gadget #101", 12500.00, "Jan 28, 2024", TransactionType.REFUND)
-        )
-    }
+    val historyItems = walletState.data?.transactions ?: emptyList()
 
     val filteredItems = remember(selectedType) {
-        if (selectedType == null) historyItems else historyItems.filter { it.type == selectedType }
+        if (selectedType == null) historyItems else historyItems.filter { it.type == selectedType?.name }
     }
 
     Column(

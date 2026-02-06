@@ -56,7 +56,7 @@ data class WalletResponse(
     val currency: String = "BIF",
     val transactions: List<TransactionResponse> = emptyList()
 )
-
+ 
 @Serializable
 data class TransactionResponse(
     val id: String,

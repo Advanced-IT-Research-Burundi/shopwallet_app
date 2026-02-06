@@ -1,6 +1,7 @@
 package com.shopwallet.shopwallet.data.model
 
 import androidx.compose.ui.graphics.vector.ImageVector
+import kotlinx.serialization.Serializable
 
 data class Transaction(
     val id: String,
