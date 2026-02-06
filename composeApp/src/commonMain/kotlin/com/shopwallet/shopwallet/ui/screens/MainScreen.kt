@@ -65,10 +65,6 @@ fun BrandMainScreen(
   ShopWalletTheme(brandColor = brand.primaryColor.toColor()) {
     MainScaffold(
       title = title,
-      showBackButton = true,
-      onBackClick = {
-          navController.popBackStack()
-      },
       bottomBar = {
         BottomNavBar(
           selectedRoute = currentRoute,
