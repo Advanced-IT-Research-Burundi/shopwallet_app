@@ -1,24 +1,18 @@
 package com.shopwallet.shopwallet.data.repository
 
 import com.shopwallet.shopwallet.data.model.WalletResponse
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.request.*
+import com.shopwallet.shopwallet.data.remote.ApiResponse
+import com.shopwallet.shopwallet.data.remote.WalletClient
+import com.shopwallet.shopwallet.utils.safeApiCall
 
 interface WalletRepo {
-    suspend fun getWallet(subscriptionId: String): Result<WalletResponse>
+    suspend fun getWallet(subscriptionId: String): Result<ApiResponse<WalletResponse>>
 }
 
 class WalletRepoImpl(
-    private val client: HttpClient
+    private val client: WalletClient
 ) : WalletRepo {
     
-    override suspend fun getWallet(subscriptionId: String): Result<WalletResponse> {
-        return try {
-            val response = client.get("subscriptions/$subscriptionId/wallet").body<WalletResponse>()
-            Result.success(response)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+    override suspend fun getWallet(subscriptionId: String): Result<ApiResponse<WalletResponse>> =
+        safeApiCall { client.getWallet(subscriptionId) }
 }

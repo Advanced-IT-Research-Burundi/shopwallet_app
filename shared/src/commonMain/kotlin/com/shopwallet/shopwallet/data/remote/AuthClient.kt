@@ -13,46 +13,22 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
-class AuthClient(private val client: HttpClient, private val baseUrl: String) {
-  suspend fun requestOtp(phone: String): Result<OtpResponse> {
-      return try {
-        val response = client.post("auth/request-otp") {
+class AuthClient(private val client: HttpClient) {
+  suspend fun requestOtp(phone: String): ApiResponse<OtpResponse> =
+        client.post("auth/request-otp") {
           contentType(ContentType.Application.Json)
           setBody(OtpRequest(phone))
-        }.body<OtpResponse>()
-        Result.success(response)
-      } catch (e: Exception) {
-          Result.failure(e)
-      }
-  }
+        }.body()
 
-  suspend fun verifyOtp(phone: String, otp: String): Result<VerifyOtpResponse> {
-        return try {
-            val response = client.post("auth/verify-otp") {
-                contentType(ContentType.Application.Json)
-                setBody(VerifyOtpRequest(phone, otp))
-            }.body<VerifyOtpResponse>()
-            Result.success(response)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-  }
+  suspend fun verifyOtp(phone: String, otp: String): ApiResponse<VerifyOtpResponse> =
+        client.post("auth/verify-otp") {
+            contentType(ContentType.Application.Json)
+            setBody(VerifyOtpRequest(phone, otp))
+        }.body()
 
-    suspend fun getUser(): Result<UserResponse> {
-        return try {
-            val response = client.get("auth/user").body<UserResponse>()
-            Result.success(response)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+    suspend fun getUser(): ApiResponse<UserResponse> =
+        client.get("auth/user").body()
 
-    suspend fun logout(): Result<Unit> {
-        return try {
-            client.post("auth/logout")
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+    suspend fun logout(): ApiResponse<Unit> =
+        client.post("auth/logout").body()
 }

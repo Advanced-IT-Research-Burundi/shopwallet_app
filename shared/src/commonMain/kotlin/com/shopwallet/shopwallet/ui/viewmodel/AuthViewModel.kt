@@ -7,6 +7,7 @@ import com.shopwallet.shopwallet.data.model.UserResponse
 import com.shopwallet.shopwallet.data.model.VerifyOtpResponse
 import com.shopwallet.shopwallet.data.repository.AuthRepo
 import com.shopwallet.shopwallet.utils.UiState
+import com.shopwallet.shopwallet.utils.launchWithState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -25,32 +26,30 @@ class AuthViewModel(
     val currentUser = _currentUser.asStateFlow()
 
     fun requestOtp(phone: String) {
-        viewModelScope.launch {
-            _otpRequestState.value = UiState(isLoading = true)
-            authRepo.requestOtp(phone).fold(
-                onSuccess = { response ->
-                    _otpRequestState.value = UiState(data = response)
-                },
-                onFailure = { error ->
-                    _otpRequestState.value = UiState(error = error.message ?: "Failed to request OTP")
-                }
-            )
-        }
+        launchWithState(
+            stateFlow = _otpRequestState,
+            block = { authRepo.requestOtp(phone) },
+            onSuccess = { resp ->
+                _otpRequestState.value = UiState(data = resp)
+            },
+            onFailure = { error ->
+                _otpRequestState.value = UiState(error = error.message ?: "Failed to request OTP")
+            }
+        )
     }
 
     fun verifyOtp(phone: String, otp: String) {
-        viewModelScope.launch {
-            _verifyOtpState.value = UiState(isLoading = true)
-            authRepo.verifyOtp(phone, otp).fold(
-                onSuccess = { response ->
-                    _verifyOtpState.value = UiState(data = response)
-                    _currentUser.value = response.user
-                },
-                onFailure = { error ->
-                    _verifyOtpState.value = UiState(error = error.message ?: "Invalid OTP")
-                }
-            )
-        }
+        launchWithState(
+            stateFlow = _verifyOtpState,
+            block = { authRepo.verifyOtp(phone, otp) },
+            onSuccess = { resp ->
+                _verifyOtpState.value = UiState(data = resp)
+                _currentUser.value = resp.user
+            },
+            onFailure = { error ->
+                _verifyOtpState.value = UiState(error = error.message ?: "Failed to verify OTP")
+            }
+        )
     }
 
     fun logout() {
