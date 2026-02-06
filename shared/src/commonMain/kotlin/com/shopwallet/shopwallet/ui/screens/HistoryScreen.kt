@@ -32,7 +32,7 @@ import org.koin.core.annotation.KoinExperimentalAPI
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 fun HistoryScreen(
-    viewModel: BrandViewModel = koinViewModel()
+    viewModel: BrandViewModel
 ) {
     var selectedType by remember { mutableStateOf<TransactionType?>(null) }
     val walletState by viewModel.walletState.collectAsState()

@@ -4,6 +4,7 @@ import com.shopwallet.shopwallet.data.model.WalletResponse
 import com.shopwallet.shopwallet.data.repository.WalletRepo
 import com.shopwallet.shopwallet.utils.UiState
 import com.shopwallet.shopwallet.utils.launchWithState
+import com.shopwallet.shopwallet.utils.launchWithState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -18,13 +19,7 @@ class BrandViewModel(
     fun loadWallet(subscriptionId: String) {
         launchWithState(
             stateFlow = _walletState,
-            block = { walletRepo.getWallet(subscriptionId) },
-            onSuccess = { wallet ->
-                _walletState.value = UiState(data = wallet)
-            },
-            onFailure = { error ->
-                _walletState.value = UiState(error = error.message ?: "Failed to load wallet")
-            }
+            block = { walletRepo.getWallet(subscriptionId) }
         )
     }
 }

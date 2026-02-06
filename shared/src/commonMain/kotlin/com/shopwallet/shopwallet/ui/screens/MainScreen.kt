@@ -88,7 +88,7 @@ fun BrandMainScreen(
                 )
             }
             currentRoute.contains("/history") -> {
-                HistoryScreen()
+                HistoryScreen(viewModel = viewModel)
             }
             else -> {
                 // Default to Wallet if route is unknown
