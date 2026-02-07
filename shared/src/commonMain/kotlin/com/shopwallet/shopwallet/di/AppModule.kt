@@ -58,4 +58,7 @@ val appModule = module {
     single<AuthRepo> { AuthRepoImpl(get(), get()) }
     single<BrandRepo> { BrandRepoImpl(get()) }
     single<WalletRepo> { WalletRepoImpl(get()) }
+
+    // Notification
+    single { com.shopwallet.shopwallet.notification.NotificationService() }
 }

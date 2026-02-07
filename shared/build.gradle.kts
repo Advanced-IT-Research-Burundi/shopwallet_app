@@ -34,6 +34,7 @@ kotlin {
       // Koin
       implementation(libs.koin.android)
       implementation(libs.koin.androidx.compose)
+      implementation("io.github.mirzemehdi:kmpnotifier:1.2.1")
     }
     commonMain.dependencies {
       implementation(libs.compose.runtime)
@@ -46,7 +47,7 @@ kotlin {
       implementation(libs.androidx.lifecycle.runtimeCompose)
       implementation(libs.androidx.lifecycle.viewmodel)
       // Icons
-      implementation(compose.materialIconsExtended)
+      implementation("org.jetbrains.compose.material:material-icons-extended:1.7.0")
       
 
       // navigation
@@ -73,6 +74,9 @@ kotlin {
       implementation(libs.koin.core)
       implementation(libs.koin.compose)
       implementation(libs.koin.compose.viewmodel)
+
+      // kmpnotifier
+      implementation("io.github.mirzemehdi:kmpnotifier:1.2.1")
     }
     iosMain.dependencies {
       implementation(libs.ktor.client.darwin)
