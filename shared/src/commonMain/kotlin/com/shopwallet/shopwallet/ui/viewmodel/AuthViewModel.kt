@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 class AuthViewModel(
     private val authRepo: AuthRepo,
     private val notificationService: com.shopwallet.shopwallet.notification.NotificationService
-) : androidx.lifecycle.ViewModel() {
+) : ViewModel() {
 
     private val _otpRequestState = MutableStateFlow(UiState<OtpResponse>())
     val otpRequestState = _otpRequestState.asStateFlow()
@@ -31,7 +31,6 @@ class AuthViewModel(
             stateFlow = _otpRequestState,
             block = { authRepo.requestOtp(phone) },
             onSuccess = { otpData ->
-                _otpRequestState.value = UiState(data = otpData)
                 otpData.otp?.let { otp ->
                     notificationService.showValueNotification("Votre code OTP est: $otp")
                 } ?: otpData.message?.let { msg ->
@@ -66,4 +65,9 @@ class AuthViewModel(
     }
 
     fun isLoggedIn(): Boolean = authRepo.getToken() != null
+    
+    fun resetStates() {
+        _otpRequestState.value = UiState()
+        _verifyOtpState.value = UiState()
+    }
 }

@@ -35,9 +35,13 @@ fun AuthScreen(
     val otpRequestState by viewModel.otpRequestState.collectAsState()
     var phoneNumber by remember { mutableStateOf("") }
 
+    LaunchedEffect(Unit) {
+        viewModel.resetStates()
+    }
+
     // Navigate to OTP screen on successful request
     LaunchedEffect(otpRequestState.data) {
-        if (otpRequestState.data?.success == true) {
+        if (otpRequestState.data != null) {
             onOtpRequested(phoneNumber)
         }
     }
@@ -145,6 +149,10 @@ fun OtpScreen(
     val viewModel = koinViewModel<AuthViewModel>()
     val verifyOtpState by viewModel.verifyOtpState.collectAsState()
     var otpCode by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        viewModel.resetStates()
+    }
 
     // Navigate on successful verification
     LaunchedEffect(verifyOtpState.data) {
