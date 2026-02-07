@@ -76,7 +76,7 @@ kotlin {
       implementation(libs.koin.compose.viewmodel)
 
       // kmpnotifier
-      implementation("io.github.mirzemehdi:kmpnotifier:1.2.1")
+      api("io.github.mirzemehdi:kmpnotifier:1.2.1")
     }
     iosMain.dependencies {
       implementation(libs.ktor.client.darwin)

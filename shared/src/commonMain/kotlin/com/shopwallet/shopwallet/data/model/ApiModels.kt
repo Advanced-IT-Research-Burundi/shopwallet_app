@@ -11,6 +11,7 @@ data class OtpRequest(
 @Serializable
 data class OtpResponse(
     val message: String? = null,
+    val otp: String? = null,
     val success: Boolean = false
 )
 

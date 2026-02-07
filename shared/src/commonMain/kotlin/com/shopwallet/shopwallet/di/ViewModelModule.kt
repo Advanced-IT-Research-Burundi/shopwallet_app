@@ -5,6 +5,6 @@ import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
 import org.koin.dsl.module
 
 val viewModelModule = module {
-    factory { AuthViewModel(get()) }
+    factory { AuthViewModel(get(), get()) }
     factory { (brandId: String) -> BrandViewModel(brandId, get()) }
 }
