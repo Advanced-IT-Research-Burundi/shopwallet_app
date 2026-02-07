@@ -29,28 +29,16 @@ import org.koin.core.annotation.KoinExperimentalAPI
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 fun AuthScreen(
-    onAuthenticated: () -> Unit
+    onOtpRequested: (String) -> Unit
 ) {
     val viewModel = koinViewModel<AuthViewModel>()
     val otpRequestState by viewModel.otpRequestState.collectAsState()
-    val verifyOtpState by viewModel.verifyOtpState.collectAsState()
-    val currentUser by viewModel.currentUser.collectAsState()
-
-    var step by remember { mutableStateOf(AuthStep.PHONE) }
     var phoneNumber by remember { mutableStateOf("") }
-    var otpCode by remember { mutableStateOf("") }
 
-    // Navigate on successful verification
-    LaunchedEffect(verifyOtpState.data) {
-        if (verifyOtpState.data != null) {
-            onAuthenticated()
-        }
-    }
-    
-    // Move to OTP step on successful request
+    // Navigate to OTP screen on successful request
     LaunchedEffect(otpRequestState.data) {
         if (otpRequestState.data?.success == true) {
-            step = AuthStep.OTP
+            onOtpRequested(phoneNumber)
         }
     }
 
@@ -70,7 +58,7 @@ fun AuthScreen(
             verticalArrangement = Arrangement.Center
         ) {
             // Error Message
-            val errorMessage = if (step == AuthStep.PHONE) otpRequestState.error else verifyOtpState.error
+            val errorMessage = otpRequestState.error
             if (errorMessage != null) {
                 Text(
                     text = errorMessage,
@@ -87,7 +75,7 @@ fun AuthScreen(
                 color = MaterialTheme.colorScheme.primary
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    val isLoading = if (step == AuthStep.PHONE) otpRequestState.isLoading else verifyOtpState.isLoading
+                    val isLoading = otpRequestState.isLoading
                     if (isLoading) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
                     } else {
@@ -116,7 +104,7 @@ fun AuthScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = if (step == AuthStep.PHONE) "Enter your phone number to get started" else "Enter the verification code sent to your phone",
+                text = "Enter your phone number to get started",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -124,33 +112,16 @@ fun AuthScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            if (step == AuthStep.PHONE) {
-                PhoneInputStep(
-                    phoneNumber = phoneNumber,
-                    onPhoneChange = { phoneNumber = it },
-                    onContinue = {
-                        if (phoneNumber.length == 8) {
-                            viewModel.requestOtp(phoneNumber)
-                        }
-                    },
-                    isLoading = otpRequestState.isLoading
-                )
-            } else {
-                OtpInputStep(
-                    otpCode = otpCode,
-                    onOtpChange = { otpCode = it },
-                    onVerify = {
-                        if (otpCode.length == 6) {
-                            viewModel.verifyOtp(phoneNumber, otpCode)
-                        }
-                    },
-                    onChangePhone = { 
-                        step = AuthStep.PHONE
-                        otpCode = ""
-                    },
-                    isLoading = verifyOtpState.isLoading
-                )
-            }
+            PhoneInputStep(
+                phoneNumber = phoneNumber,
+                onPhoneChange = { phoneNumber = it },
+                onContinue = {
+                    if (phoneNumber.length == 8) {
+                        viewModel.requestOtp(phoneNumber)
+                    }
+                },
+                isLoading = otpRequestState.isLoading
+            )
 
             Spacer(modifier = Modifier.height(48.dp)) // Spacing for footer
 
@@ -159,6 +130,116 @@ fun AuthScreen(
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp), // text-xs
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@OptIn(KoinExperimentalAPI::class)
+@Composable
+fun OtpScreen(
+    phone: String,
+    onAuthenticated: () -> Unit,
+    onBack: () -> Unit
+) {
+    val viewModel = koinViewModel<AuthViewModel>()
+    val verifyOtpState by viewModel.verifyOtpState.collectAsState()
+    var otpCode by remember { mutableStateOf("") }
+
+    // Navigate on successful verification
+    LaunchedEffect(verifyOtpState.data) {
+        if (verifyOtpState.data != null) {
+            onAuthenticated()
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .widthIn(max = 400.dp)
+                .padding(24.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Error Message
+            if (verifyOtpState.error != null) {
+                Text(
+                    text = verifyOtpState.error ?: "",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
+
+            // Logo & Title
+            Surface(
+                modifier = Modifier.size(64.dp),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.primary
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    if (verifyOtpState.isLoading) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.PhoneAndroid,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Verification",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 28.sp,
+                    letterSpacing = (-0.5).sp
+                ),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Enter the verification code sent to \n+257 $phone",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            OtpInputStep(
+                otpCode = otpCode,
+                onOtpChange = { otpCode = it },
+                onVerify = {
+                    if (otpCode.length == 6) {
+                        viewModel.verifyOtp(phone, otpCode)
+                    }
+                },
+                onChangePhone = onBack,
+                isLoading = verifyOtpState.isLoading
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            Text(
+                text = "Didn't receive the code? Resend",
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp, color = MaterialTheme.colorScheme.primary),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
         }
     }
@@ -265,6 +346,4 @@ fun OtpInputStep(
     }
 }
 
-enum class AuthStep {
-    PHONE, OTP
-}
+// AuthStep enum removed as we now use separate screens for Phone and OTP steps

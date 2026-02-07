@@ -10,6 +10,7 @@ import androidx.navigation.compose.navigation
 import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
 import com.shopwallet.shopwallet.ui.viewmodel.AuthViewModel
 import com.shopwallet.shopwallet.ui.auth.AuthScreen
+import com.shopwallet.shopwallet.ui.auth.OtpScreen
 import com.shopwallet.shopwallet.ui.screens.BrandMainScreen
 import com.shopwallet.shopwallet.ui.screens.BrandsGrid
 
@@ -36,12 +37,24 @@ fun AppNavigation(
     startDestination = startDestination
   ) {
     composable(Screen.Auth.route) {
-      AuthScreen {
-        // Auth handled in AuthViewModel now, but for flow:
-        navController.navigate(Screen.Brands.route) {
-          popUpTo(Screen.Auth.route) { inclusive = true }
+      AuthScreen(onOtpRequested = { phone ->
+        navController.navigate(Screen.Otp.createRoute(phone))
+      })
+    }
+    
+    composable(Screen.Otp.route) { backStackEntry ->
+      val phone = backStackEntry.arguments?.getString("phone") ?: ""
+      OtpScreen(
+        phone = phone,
+        onAuthenticated = {
+          navController.navigate(Screen.Brands.route) {
+            popUpTo(Screen.Auth.route) { inclusive = true }
+          }
+        },
+        onBack = {
+          navController.popBackStack()
         }
-      }
+      )
     }
 
     composable(Screen.Brands.route) {

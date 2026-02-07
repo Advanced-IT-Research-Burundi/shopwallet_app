@@ -9,6 +9,9 @@ import shopwallet.shared.generated.resources.label_wallet
 
 sealed class Screen(val route: String) {
   object Auth : Screen("auth")
+  object Otp : Screen("otp/{phone}") {
+      fun createRoute(phone: String) = "otp/$phone"
+  }
   object Brands : Screen("brands")
   object BrandDetails : Screen("brand/{brandId}") {
     fun createRoute(brandId: String) = "brand/$brandId"
