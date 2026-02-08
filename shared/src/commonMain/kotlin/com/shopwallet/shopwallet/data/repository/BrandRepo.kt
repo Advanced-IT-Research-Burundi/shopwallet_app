@@ -3,7 +3,7 @@ package com.shopwallet.shopwallet.data.repository
 import com.shopwallet.shopwallet.data.model.Brand
 import com.shopwallet.shopwallet.data.model.CompanyResponse
 import com.shopwallet.shopwallet.data.model.Product
-import com.shopwallet.shopwallet.data.remote.BrandClient
+import com.shopwallet.shopwallet.data.remote.KtorClient
 import com.shopwallet.shopwallet.data.remote.ApiResponse
 import com.shopwallet.shopwallet.utils.safeApiCall
 
@@ -13,7 +13,7 @@ interface BrandRepo {
 }
 
 class BrandRepoImpl(
-    private val client: BrandClient
+    private val client: KtorClient
 ) : BrandRepo {
     
     override suspend fun getCompanies(): Result<ApiResponse<List<CompanyResponse>>> =

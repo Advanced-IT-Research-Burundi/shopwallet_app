@@ -2,12 +2,8 @@ package com.shopwallet.shopwallet.di
 
 import com.russhwolf.settings.Settings
 import com.shopwallet.shopwallet.data.local.AppPreferenceManager
-import com.shopwallet.shopwallet.data.remote.AuthClient
-import com.shopwallet.shopwallet.data.remote.BrandClient
-import com.shopwallet.shopwallet.data.remote.WalletClient
-import io.ktor.client.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.serialization.kotlinx.json.*
+import com.shopwallet.shopwallet.data.remote.KtorClient
+import com.shopwallet.shopwallet.data.remote.provideHttpClient
 import com.shopwallet.shopwallet.data.repository.AuthRepo
 import com.shopwallet.shopwallet.data.repository.AuthRepoImpl
 import com.shopwallet.shopwallet.data.repository.BrandRepo
@@ -25,38 +21,11 @@ val appModule = module {
     single { AppPreferenceManager(get()) }
     
     // Network
-    single<HttpClient> {
-        val prefs = get<AppPreferenceManager>()
-        HttpClient {
-            install(ContentNegotiation) {
-                json(Json {
-                    ignoreUnknownKeys = true
-                    prettyPrint = true
-                    isLenient = true
-                })
-            }
-            
-            install(io.ktor.client.plugins.logging.Logging) {
-                logger = io.ktor.client.plugins.logging.Logger.DEFAULT
-                level = io.ktor.client.plugins.logging.LogLevel.INFO
-            }
-            
-            defaultRequest {
-                url("https://shopping-wallet.advanceditb.com/api/")
-                
-                // Add auth token if available
-                val token = prefs.authToken
-                if (!token.isNullOrEmpty()) {
-                    headers.append("Authorization", "Bearer $token")
-                }
-            }
-        }
-    }
+    val baseUrl = "https://shopping-wallet.advanceditb.com/api"
+    single { provideHttpClient(get()) }
 
     // API Clients
-    single { AuthClient(get()) }
-    single { BrandClient(get()) }
-    single { WalletClient(get()) }
+    single { KtorClient(get(), baseUrl) }
     
     // Repositories
     single<AuthRepo> { AuthRepoImpl(get(), get()) }

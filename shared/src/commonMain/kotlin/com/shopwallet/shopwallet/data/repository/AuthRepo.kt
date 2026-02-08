@@ -3,8 +3,8 @@ package com.shopwallet.shopwallet.data.repository
 import com.shopwallet.shopwallet.data.local.AppPreferenceManager
 import com.shopwallet.shopwallet.data.model.*
 import com.shopwallet.shopwallet.data.remote.ApiResponse
-import com.shopwallet.shopwallet.data.remote.AuthClient
 import com.shopwallet.shopwallet.data.remote.EmptyResponse
+import com.shopwallet.shopwallet.data.remote.KtorClient
 import com.shopwallet.shopwallet.utils.safeApiCall
 
 interface AuthRepo {
@@ -18,7 +18,7 @@ interface AuthRepo {
 }
 
 class AuthRepoImpl(
-    private val client: AuthClient,
+    private val client: KtorClient,
     private val prefs: AppPreferenceManager,
 ) : AuthRepo {
     

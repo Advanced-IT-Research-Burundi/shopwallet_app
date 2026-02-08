@@ -2,7 +2,7 @@ package com.shopwallet.shopwallet.data.repository
 
 import com.shopwallet.shopwallet.data.model.WalletResponse
 import com.shopwallet.shopwallet.data.remote.ApiResponse
-import com.shopwallet.shopwallet.data.remote.WalletClient
+import com.shopwallet.shopwallet.data.remote.KtorClient
 import com.shopwallet.shopwallet.utils.safeApiCall
 
 interface WalletRepo {
@@ -10,7 +10,7 @@ interface WalletRepo {
 }
 
 class WalletRepoImpl(
-    private val client: WalletClient
+    private val client: KtorClient
 ) : WalletRepo {
     
     override suspend fun getWallet(subscriptionId: String): Result<ApiResponse<WalletResponse>> =
