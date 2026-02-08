@@ -10,9 +10,7 @@ import com.shopwallet.shopwallet.data.repository.BrandRepo
 import com.shopwallet.shopwallet.data.repository.BrandRepoImpl
 import com.shopwallet.shopwallet.data.repository.WalletRepo
 import com.shopwallet.shopwallet.data.repository.WalletRepoImpl
-import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.plugins.logging.DEFAULT
-import kotlinx.serialization.json.Json
+import com.shopwallet.shopwallet.notification.NotificationService
 import org.koin.dsl.module
 
 val appModule = module {
@@ -33,5 +31,5 @@ val appModule = module {
     single<WalletRepo> { WalletRepoImpl(get()) }
 
     // Services
-    single { com.shopwallet.shopwallet.notification.NotificationService() }
+    single { NotificationService() }
 }

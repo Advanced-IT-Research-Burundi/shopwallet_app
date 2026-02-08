@@ -6,10 +6,10 @@ class NotificationService {
 
     fun showValueNotification(value: String) {
         val notifier = NotifierManager.getLocalNotifier()
-        notifier.notify("Notification", value)
+        notifier.notify("Shop Wallet", value)
     }
 
-    suspend fun askPermission() {
+    fun askPermission() {
         val permissionUtil = NotifierManager.getPermissionUtil()
         permissionUtil.askNotificationPermission()
     }
