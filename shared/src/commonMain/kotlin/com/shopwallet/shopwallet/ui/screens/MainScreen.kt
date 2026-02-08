@@ -54,7 +54,8 @@ fun BrandMainScreen(
     brand: Brand,
     currentRoute: String,
     navController: NavHostController,
-    viewModel: BrandViewModel
+    viewModel: BrandViewModel,
+    onLogout: () -> Unit = {}
 ) {
   val title = when {
       currentRoute.contains("/wallet") -> "My Wallet"
@@ -65,6 +66,7 @@ fun BrandMainScreen(
   ShopWalletTheme(brandColor = brand.primaryColor.toColor()) {
     MainScaffold(
       title = title,
+      onLogout = onLogout,
       bottomBar = {
         BottomNavBar(
           selectedRoute = currentRoute,

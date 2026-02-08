@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.History
@@ -49,6 +50,7 @@ fun MainScaffold(
   title: String,
   snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
   actions: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {},
+  onLogout: () -> Unit = {},
   bottomBar: @Composable () -> Unit = {},
   content: @Composable () -> Unit
 ) {
@@ -72,12 +74,12 @@ fun MainScaffold(
 //        },
         actions = {
             actions()
-            // Default Profile Icon
-            IconButton(onClick = { /* TODO: Navigate to Profile/Settings */ }) {
+            // Logout Icon
+            IconButton(onClick = onLogout) {
                 Icon(
-                    imageVector = Icons.Default.AccountCircle, 
-                    contentDescription = "Profile",
-                    tint = MaterialTheme.colorScheme.onSurface
+                    imageVector = Icons.AutoMirrored.Filled.Logout, 
+                    contentDescription = "Logout",
+                    tint = MaterialTheme.colorScheme.error
                 )
             }
         },

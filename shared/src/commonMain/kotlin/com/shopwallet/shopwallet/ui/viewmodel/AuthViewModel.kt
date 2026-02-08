@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.shopwallet.shopwallet.data.model.OtpResponse
 import com.shopwallet.shopwallet.data.model.UserResponse
 import com.shopwallet.shopwallet.data.model.VerifyOtpResponse
+import com.shopwallet.shopwallet.data.remote.EmptyResponse
 import com.shopwallet.shopwallet.data.repository.AuthRepo
 import com.shopwallet.shopwallet.utils.UiState
 import com.shopwallet.shopwallet.utils.launchWithState
@@ -17,22 +18,22 @@ class AuthViewModel(
     private val notificationService: com.shopwallet.shopwallet.notification.NotificationService
 ) : ViewModel() {
 
-    private val _otpRequestState = MutableStateFlow(UiState<OtpResponse>())
-    val otpRequestState = _otpRequestState.asStateFlow()
 
-    private val _verifyOtpState = MutableStateFlow(UiState<VerifyOtpResponse>())
-    val verifyOtpState = _verifyOtpState.asStateFlow()
+
+
 
     private val _currentUser = MutableStateFlow<UserResponse?>(null)
     val currentUser = _currentUser.asStateFlow()
 
+    private val _otpRequestState = MutableStateFlow(UiState<OtpResponse>())
+    val otpRequestState = _otpRequestState.asStateFlow()
     fun requestOtp(phone: String) {
         launchWithState(
             stateFlow = _otpRequestState,
             block = { authRepo.requestOtp(phone) },
             onSuccess = { otpData ->
                 otpData.otp?.let { otp ->
-                    notificationService.showValueNotification("Votre code OTP est: $otp")
+                    notificationService.showValueNotification("Your OTP code is $otp. It will expire in 30 minutes")
                 } ?: otpData.message?.let { msg ->
                     notificationService.showValueNotification(msg)
                 }
@@ -43,6 +44,8 @@ class AuthViewModel(
         )
     }
 
+    private val _verifyOtpState = MutableStateFlow(UiState<VerifyOtpResponse>())
+    val verifyOtpState = _verifyOtpState.asStateFlow()
     fun verifyOtp(phone: String, otp: String) {
         launchWithState(
             stateFlow = _verifyOtpState,
@@ -57,11 +60,16 @@ class AuthViewModel(
         )
     }
 
+    private val _logoutState = MutableStateFlow(UiState<EmptyResponse>())
+    val logoutState = _logoutState.asStateFlow()
     fun logout() {
-        viewModelScope.launch {
-            authRepo.logout()
-            _currentUser.value = null
-        }
+        launchWithState(
+            stateFlow = _logoutState,
+            block = { authRepo.logout() },
+            onSuccess = {
+                _currentUser.value = null
+            }
+        )
     }
 
     fun isLoggedIn(): Boolean = authRepo.getToken() != null

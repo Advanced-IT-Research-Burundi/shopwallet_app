@@ -2,7 +2,7 @@ package com.shopwallet.shopwallet.ui.navigation
 
 import com.shopwallet.shopwallet.data.brands
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,6 +24,15 @@ fun AppNavigation(
   navController: NavHostController
 ) {
   val authViewModel = koinViewModel<AuthViewModel>()
+  val logoutState by authViewModel.logoutState.collectAsState()
+
+  LaunchedEffect(logoutState.data) {
+    if (logoutState.data != null) {
+      navController.navigate(Screen.Auth.route) {
+        popUpTo(0) { inclusive = true }
+      }
+    }
+  }
 
   // Determine start destination
   val startDestination = if (authViewModel.isLoggedIn()) {
@@ -60,6 +69,7 @@ fun AppNavigation(
     composable(Screen.Brands.route) {
       MainScaffold(
         title = "ShopWallet",
+        onLogout = { authViewModel.logout() }
       ) {
         BrandsGrid(onBrandClick = { brand ->
           navController.navigate(Screen.BrandDetails.createRoute(brand.id))
@@ -74,15 +84,15 @@ fun AppNavigation(
     ) {
         composable(Screen.BrandDetails.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.BrandDetails.route)
+            BrandContainer(brandId, navController, Screen.BrandDetails.route, onLogout = { authViewModel.logout() })
         }
         composable(Screen.Wallet.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.Wallet.route)
+            BrandContainer(brandId, navController, Screen.Wallet.route, onLogout = { authViewModel.logout() })
         }
         composable(Screen.History.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.History.route)
+            BrandContainer(brandId, navController, Screen.History.route, onLogout = { authViewModel.logout() })
         }
     }
   }
@@ -94,6 +104,7 @@ fun BrandContainer(
     brandId: String?,
     navController: NavHostController,
     currentRoute: String,
+    onLogout: () -> Unit
 ) {
     val brand = brands.find { it.id == brandId } ?: return
     
@@ -104,6 +115,7 @@ fun BrandContainer(
         brand = brand,
         currentRoute = currentRoute,
         navController = navController,
-        viewModel = viewModel
+        viewModel = viewModel,
+        onLogout = onLogout
     )
 }
