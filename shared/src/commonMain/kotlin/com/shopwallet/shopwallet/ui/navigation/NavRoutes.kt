@@ -25,7 +25,7 @@ sealed class Screen(val route: String) {
 }
 
 sealed class BottomNavScreen(val route: String, val labelRes: StringResource) {
-  object Brand : BottomNavScreen("brand/{brandId}", Res.string.label_brand)
   object Wallet : BottomNavScreen("brand/{brandId}/wallet", Res.string.label_wallet)
+  object Brand : BottomNavScreen("brands", Res.string.label_brand)
   object History: BottomNavScreen("brand/{brandId}/history", Res.string.label_history)
 }

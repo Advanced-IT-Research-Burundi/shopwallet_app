@@ -13,12 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountBalanceWallet
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Storefront
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,13 +33,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
-import shopwallet.shared.generated.resources.Res
-import shopwallet.shared.generated.resources.action_back
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,21 +56,13 @@ fun MainScaffold(
         title = { 
             Text(
                 title, 
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             ) 
         },
-//        navigationIcon = {
-//          if (showBackButton) {
-//            IconButton(onClick = onBackClick) {
-//              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.action_back))
-//            }
-//          }
-//        },
         actions = {
             actions()
-            // Logout Icon
             IconButton(onClick = onLogout) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Logout, 
@@ -84,7 +71,7 @@ fun MainScaffold(
                 )
             }
         },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+        colors = TopAppBarDefaults.topAppBarColors(
           containerColor = MaterialTheme.colorScheme.background,
           titleContentColor = MaterialTheme.colorScheme.onBackground
         )
@@ -120,9 +107,8 @@ fun BottomNavBar(
       windowInsets = WindowInsets(0.dp)
     ) {
       val items = listOf(
-//        BottomNavScreen.Brand,
         BottomNavScreen.Wallet,
-//        BottomNavScreen.Cart,
+        BottomNavScreen.Brand,
         BottomNavScreen.History
       )
 
@@ -147,9 +133,10 @@ fun BottomNavBar(
           selected = when(screen) {
             BottomNavScreen.Wallet -> selectedRoute?.contains("/wallet") == true
             BottomNavScreen.History -> selectedRoute?.contains("/history") == true
-            BottomNavScreen.Brand -> selectedRoute?.contains("brand/") == true && 
-                                    !selectedRoute.contains("/wallet") && 
-                                    !selectedRoute.contains("/history")
+            BottomNavScreen.Brand -> selectedRoute == "brands" || 
+                                    (selectedRoute?.contains("brand/") == true && 
+                                     !selectedRoute.contains("/wallet") && 
+                                     !selectedRoute.contains("/history"))
           },
           onClick = { onItemSelected(screen) },
           colors = NavigationBarItemDefaults.colors(

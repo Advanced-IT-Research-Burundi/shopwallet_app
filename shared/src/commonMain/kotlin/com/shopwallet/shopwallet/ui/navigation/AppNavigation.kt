@@ -69,7 +69,24 @@ fun AppNavigation(
     composable(Screen.Brands.route) {
       MainScaffold(
         title = "ShopWallet",
-        onLogout = { authViewModel.logout() }
+        onLogout = { authViewModel.logout() },
+        bottomBar = {
+            BottomNavBar(
+                selectedRoute = Screen.Brands.route,
+                onItemSelected = { screen ->
+                    if (screen == BottomNavScreen.Brand) {
+                        navController.navigate(Screen.Brands.route) {
+                            popUpTo(Screen.Brands.route) { inclusive = true }
+                        }
+                    } else {
+                        // For Wallet and History, we need a brandId.
+                        // We use the first brand as a default if none is selected yet.
+                        val defaultBrandId = brands.firstOrNull()?.id ?: ""
+                        navController.navigate(screen.route.replace("{brandId}", defaultBrandId))
+                    }
+                }
+            )
+        }
       ) {
         BrandsGrid(onBrandClick = { brand ->
           navController.navigate(Screen.BrandDetails.createRoute(brand.id))
