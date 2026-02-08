@@ -20,9 +20,11 @@ import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
 val appModule = module {
+    // Local Data
     single<Settings> { Settings() }
     single { AppPreferenceManager(get()) }
     
+    // Network
     single<HttpClient> {
         val prefs = get<AppPreferenceManager>()
         HttpClient {
@@ -50,6 +52,8 @@ val appModule = module {
             }
         }
     }
+
+    // API Clients
     single { AuthClient(get()) }
     single { BrandClient(get()) }
     single { WalletClient(get()) }
@@ -59,6 +63,6 @@ val appModule = module {
     single<BrandRepo> { BrandRepoImpl(get()) }
     single<WalletRepo> { WalletRepoImpl(get()) }
 
-    // Notification
+    // Services
     single { com.shopwallet.shopwallet.notification.NotificationService() }
 }
