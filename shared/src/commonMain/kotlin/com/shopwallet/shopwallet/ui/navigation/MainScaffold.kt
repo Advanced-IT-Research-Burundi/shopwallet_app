@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountBalanceWallet
@@ -126,13 +127,23 @@ fun MainScaffold(
         },
         actions = {
             actions()
-            IconButton(onClick = onLogout) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Logout, 
-                    contentDescription = "Logout",
-                    tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(22.dp)
-                )
+            Surface(
+                onClick = onLogout,
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
+                modifier = Modifier.padding(end = 8.dp)
+            ) {
+                Box(
+                    modifier = Modifier.padding(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Logout, 
+                        contentDescription = "Logout",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
