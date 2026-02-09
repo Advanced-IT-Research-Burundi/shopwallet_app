@@ -51,7 +51,6 @@ fun BrandMainScreen(
     currentRoute: String,
     navController: NavHostController,
     viewModel: BrandViewModel,
-    onLogout: () -> Unit = {}
 ) {
   val title = when {
       currentRoute.contains("/wallet") -> "My Wallet"
@@ -62,7 +61,6 @@ fun BrandMainScreen(
   ShopWalletTheme(brandColor = brand.color.toColor()) {
     MainScaffold(
       title = title,
-      onLogout = onLogout,
       onFabClick = {
           navController.navigate(Screen.Brands.route) {
               popUpTo(Screen.Brands.route) { inclusive = true }

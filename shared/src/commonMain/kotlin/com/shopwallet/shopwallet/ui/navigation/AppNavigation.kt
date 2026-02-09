@@ -28,7 +28,7 @@ import org.koin.core.parameter.parametersOf
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 fun AppNavigation(
-  navController: NavHostController
+  navController: NavHostController,
 ) {
   val authViewModel = koinViewModel<AuthViewModel>()
   val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
@@ -85,6 +85,8 @@ fun AppNavigation(
     composable(Screen.Brands.route) {
       val viewModel = koinViewModel<BrandViewModel>(key = "global") { parametersOf("") }
       val subscriptions by viewModel.subscriptionsState.collectAsState()
+      val logoutState by authViewModel.logoutState.collectAsState()
+
 
       LaunchedEffect(Unit) {
           viewModel.getSubscriptions()
@@ -92,7 +94,12 @@ fun AppNavigation(
 
       MainScaffold(
         title = "ShopWallet",
-        onLogout = { authViewModel.logout() },
+        onLogout = {
+          authViewModel.logout()
+          navController.navigate(Screen.Auth.route) {
+            popUpTo(0) { inclusive = true }
+          }
+        },
         onFabClick = {
             navController.navigate(Screen.Brands.route) {
                 popUpTo(0) { inclusive = true }
@@ -133,15 +140,15 @@ fun AppNavigation(
     ) {
         composable(Screen.BrandDetails.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.BrandDetails.route, onLogout = { authViewModel.logout() })
+            BrandContainer(brandId, navController, Screen.BrandDetails.route)
         }
         composable(Screen.Wallet.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.Wallet.route, onLogout = { authViewModel.logout() })
+            BrandContainer(brandId, navController, Screen.Wallet.route)
         }
         composable(Screen.History.route) { backStackEntry ->
             val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.History.route, onLogout = { authViewModel.logout() })
+            BrandContainer(brandId, navController, Screen.History.route)
         }
     }
   }
@@ -153,7 +160,6 @@ fun BrandContainer(
     brandId: String?,
     navController: NavHostController,
     currentRoute: String,
-    onLogout: () -> Unit
 ) {
     // Get a global ViewModel to find the brand from subscriptions
     val globalViewModel = koinViewModel<BrandViewModel>(key = "global") { parametersOf("") }
@@ -197,6 +203,5 @@ fun BrandContainer(
         currentRoute = currentRoute,
         navController = navController,
         viewModel = viewModel,
-        onLogout = onLogout
     )
 }
