@@ -154,13 +154,12 @@ fun MainScaffold(
     },
     bottomBar = bottomBar,
     floatingActionButton = {
-        // Render target center FAB only if bottomBar is present
         if (bottomBar != @Composable {}) {
             FloatingActionButton(
                 onClick = onFabClick,
                 shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 modifier = Modifier.size(52.dp).offset(y = 44.dp)
             ) {
                 Icon(
