@@ -14,9 +14,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
-    private val authRepo: AuthRepo,
-    private val notificationService: com.shopwallet.shopwallet.notification.NotificationService
+  private val authRepo: AuthRepo,
+  private val notificationService: com.shopwallet.shopwallet.notification.NotificationService
 ) : ViewModel() {
+  private val _isLoggedIn = MutableStateFlow(authRepo.getToken() != null)
+  val isLoggedIn = _isLoggedIn.asStateFlow()
 
 
 
@@ -51,9 +53,10 @@ class AuthViewModel(
             stateFlow = _verifyOtpState,
             block = { authRepo.verifyOtp(phone, otp) },
             onSuccess = { resp ->
-        _verifyOtpState.value = UiState(data = resp)
-        _currentUser.value = resp?.user
-      },
+                _verifyOtpState.value = UiState(data = resp)
+                _currentUser.value = resp?.user
+                _isLoggedIn.value = true
+            },
             onFailure = { error ->
                 _verifyOtpState.value = UiState(error = error.message ?: "Failed to verify OTP")
             }
@@ -68,11 +71,15 @@ class AuthViewModel(
             block = { authRepo.logout() },
             onSuccess = {
                 _currentUser.value = null
+                _isLoggedIn.value = false
             }
         )
     }
 
-    fun isLoggedIn(): Boolean = authRepo.getToken() != null
+    fun checkLoginStatus() {
+        _isLoggedIn.value = authRepo.getToken() != null
+    }
+
     
     fun resetStates() {
         _otpRequestState.value = UiState()
