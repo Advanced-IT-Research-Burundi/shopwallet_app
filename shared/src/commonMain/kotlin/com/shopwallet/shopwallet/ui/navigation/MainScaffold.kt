@@ -148,9 +148,9 @@ fun MainScaffold(
             FloatingActionButton(
                 onClick = onFabClick,
                 shape = CircleShape,
-                containerColor = Color(0xFFFEF200), // Distinctive Yellow
-                contentColor = Color(0xFF007BC4),    // Blue icon
-                modifier = Modifier.size(52.dp).offset(y = 44.dp) // Smaller FAB, adjusted offset
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(52.dp).offset(y = 44.dp)
             ) {
                 Icon(
                     imageVector = Icons.Filled.Storefront,
@@ -183,10 +183,10 @@ fun BottomNavBar(
         modifier = Modifier
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.navigationBars)
-            .height(68.dp) // Reduced height from 82.dp
+            .height(68.dp)
             .shadow(elevation = 12.dp, shape = CustomBottomBarShape()),
         shape = CustomBottomBarShape(),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         tonalElevation = 2.dp
     ) {
         Row(
@@ -220,8 +220,8 @@ private fun NavBarItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val activeColor = Color(0xFF0077CC)
-    val inactiveColor = Color.LightGray.copy(alpha = 0.8f)
+    val activeColor = MaterialTheme.colorScheme.primary
+    val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
     
     val icon = when (screen) {
         BottomNavScreen.Wallet -> Icons.Filled.AccountBalanceWallet
@@ -231,7 +231,7 @@ private fun NavBarItem(
 
     Column(
         modifier = Modifier
-            .width(60.dp) // Reduced width
+            .width(60.dp)
             .fillMaxHeight()
             .clickable(
                 interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
@@ -245,14 +245,14 @@ private fun NavBarItem(
             imageVector = icon,
             contentDescription = null,
             tint = if (isSelected) activeColor else inactiveColor,
-            modifier = Modifier.size(24.dp) // Reduced from 28.dp
+            modifier = Modifier.size(24.dp)
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = stringResource(screen.labelRes),
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                fontSize = 11.sp // Reduced from 12.sp
+                fontSize = 11.sp
             ),
             color = if (isSelected) activeColor else inactiveColor,
             maxLines = 1,
