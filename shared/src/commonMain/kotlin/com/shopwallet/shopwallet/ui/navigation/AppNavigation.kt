@@ -105,7 +105,7 @@ fun AppNavigation(
         BrandsGrid(
             subscriptionsState = subscriptions,
                 onBrandClick = { brand ->
-                    navController.navigate(Screen.BrandDetails.createRoute(brand.id.toString()))
+                    navController.navigate(Screen.Wallet.createRoute(brand.id.toString()))
                 },
             onRetry = { viewModel.getSubscriptions() }
         )
@@ -114,7 +114,7 @@ fun AppNavigation(
 
     // Nested Brand Graph to share ViewModel/State
     navigation(
-        startDestination = Screen.BrandDetails.route,
+        startDestination = Screen.Wallet.route,
         route = "brand_graph/{brandId}"
     ) {
         composable(Screen.BrandDetails.route) { backStackEntry ->
