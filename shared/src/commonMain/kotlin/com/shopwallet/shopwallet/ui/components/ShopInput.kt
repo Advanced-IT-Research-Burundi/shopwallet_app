@@ -1,18 +1,34 @@
 package com.shopwallet.shopwallet.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.shopwallet.shopwallet.ui.theme.Shapes
@@ -35,11 +51,6 @@ fun ShopInput(
   leadingIcon: @Composable (() -> Unit)? = null,
   trailingIcon: @Composable (() -> Unit)? = null
 ) {
-  // React input tokens:
-  // border-input (Outline)
-  // bg-input-background (Surface/White)
-  // rounded-md (Small shape)
-  // focus-visible:ring-ring (Primary)
 
   OutlinedTextField(
     value = value,
@@ -69,3 +80,70 @@ fun ShopInput(
     )
   )
 }
+
+@Composable
+fun ShopOtpInput(
+  value: String,
+  onValueChange: (String) -> Unit,
+  modifier: Modifier = Modifier,
+  length: Int = 6,
+  isError: Boolean = false
+) {
+  BasicTextField(
+    value = value,
+    onValueChange = {
+      if (it.length <= length && it.all { char -> char.isDigit() }) {
+        onValueChange(it)
+      }
+    },
+    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+    modifier = modifier,
+    decorationBox = {
+      Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+      ) {
+        repeat(length) { index ->
+          val char = value.getOrNull(index)?.toString() ?: ""
+          val isFocused = index == value.length
+          OtpCell(
+            char = char,
+            isFocused = isFocused,
+            isError = isError
+          )
+        }
+      }
+    }
+  )
+}
+
+@Composable
+private fun OtpCell(
+  char: String,
+  isFocused: Boolean,
+  isError: Boolean
+) {
+  val borderColor = when {
+    isError -> MaterialTheme.colorScheme.error
+    isFocused -> MaterialTheme.colorScheme.primary
+    else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+  }
+
+  Box(
+    modifier = Modifier
+      .size(width = 48.dp, height = 56.dp)
+      .border(if (isFocused || isError) 2.dp else 1.dp, borderColor, RoundedCornerShape(8.dp))
+      .background(MaterialTheme.colorScheme.background, RoundedCornerShape(8.dp)),
+    contentAlignment = Alignment.Center
+  ) {
+    Text(
+      text = char,
+      style = MaterialTheme.typography.headlineSmall.copy(
+        fontWeight = FontWeight.Bold,
+        color = Color.Black
+      )
+    )
+  }
+}
+
