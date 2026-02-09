@@ -24,6 +24,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
 import com.shopwallet.shopwallet.ui.components.ShopOtpInput
+import com.shopwallet.shopwallet.ui.components.ShopPostInput
 import org.koin.core.annotation.KoinExperimentalAPI
 
 @OptIn(KoinExperimentalAPI::class)
@@ -274,28 +275,13 @@ fun PhoneInputStep(
       color = MaterialTheme.colorScheme.onBackground
     )
     Spacer(modifier = Modifier.height(8.dp))
-    ShopInput(
+    ShopPostInput(
       value = phoneNumber,
-      onValueChange = { if (it.length <= 8 && it.all { char -> char.isDigit() }) onPhoneChange(it) },
-      placeholder = "+257 00 000 000",
-      keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-      modifier = Modifier.height(56.dp) // h-12 = 48px, but inputs are usually comfy at 56
+      loading = isLoading,
+      onValueChange = { if (it.length <= 8 && it.all { char -> char.isDigit() }) onPhoneChange(it)  },
+      onPostClick = onContinue,
+      placeholder = "00 000 000"
     )
-    Spacer(modifier = Modifier.height(16.dp))
-    ShopButton(
-      onClick = onContinue,
-      modifier = Modifier.fillMaxWidth().height(48.dp),
-      enabled = phoneNumber.length == 8 && !isLoading
-    ) {
-      if (isLoading) {
-        CircularProgressIndicator(
-          modifier = Modifier.size(20.dp),
-          color = MaterialTheme.colorScheme.onPrimary
-        )
-      } else {
-        Text("Continue")
-      }
-    }
   }
 }
 

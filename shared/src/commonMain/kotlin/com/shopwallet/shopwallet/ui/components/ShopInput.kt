@@ -14,12 +14,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
@@ -31,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.shopwallet.shopwallet.ui.theme.Shapes
 
 @Composable
@@ -147,3 +154,61 @@ private fun OtpCell(
   }
 }
 
+@Composable
+fun ShopPostInput(
+  value: String,
+  onValueChange: (String) -> Unit,
+  onPostClick: () -> Unit,
+  loading: Boolean = false,
+  modifier: Modifier = Modifier,
+  placeholder: String = ""
+) {
+  Column(modifier = modifier) {
+    Row(
+      verticalAlignment = Alignment.Bottom,
+      modifier = Modifier.fillMaxWidth()
+    ) {
+      BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier.weight(1f),
+        textStyle = TextStyle(
+          fontSize = 24.sp,
+          color = MaterialTheme.colorScheme.onBackground,
+          fontWeight = FontWeight.Medium
+        ),
+        decorationBox = { innerTextField ->
+          if (value.isEmpty()) {
+            Text(
+              text = placeholder,
+              color = Color.LightGray,
+              fontSize = 24.sp
+            )
+          }
+          innerTextField()
+        }
+      )
+
+      if (loading) {
+        CircularProgressIndicator(
+          modifier = Modifier.size(20.dp),
+          color = MaterialTheme.colorScheme.onPrimary
+        )
+      } else {
+        IconButton(onClick = onPostClick) {
+          Icon(
+            imageVector = Icons.Default.ArrowForward,
+            contentDescription = "Post",
+            tint = MaterialTheme.colorScheme.primary
+          )
+        }
+      }
+    }
+    Box(
+      modifier = Modifier
+        .fillMaxWidth()
+        .height(2.dp)
+        .background(MaterialTheme.colorScheme.outline)
+    )
+  }
+}
