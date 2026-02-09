@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,7 +23,6 @@ import com.shopwallet.shopwallet.data.model.Transaction
 import com.shopwallet.shopwallet.data.model.TransactionStatus
 import com.shopwallet.shopwallet.data.model.TransactionType
 import com.shopwallet.shopwallet.utils.CurrencyFormat
-import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.runtime.collectAsState
 import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -35,11 +33,11 @@ fun HistoryScreen(
     viewModel: BrandViewModel
 ) {
     var selectedType by remember { mutableStateOf<TransactionType?>(null) }
-    val walletState by viewModel.walletState.collectAsState()
+    val transactionsState by viewModel.transactionsState.collectAsState()
     
-    val historyItems = walletState.data?.transactions ?: emptyList()
+    val historyItems = transactionsState.data?.data ?: emptyList()
 
-    val filteredItems = remember(selectedType) {
+    val filteredItems = remember(selectedType, historyItems) {
         if (selectedType == null) historyItems else historyItems.filter { it.type == selectedType }
     }
 
@@ -73,7 +71,8 @@ fun HistoryScreen(
                             onClick = { selectedType = null }
                         )
                     }
-                    TransactionType.entries.forEach { type ->
+                    // Filter out the old types for display if needed, but here we just use all entries
+                    TransactionType.entries.filter { it == TransactionType.DEBIT || it == TransactionType.CREDIT }.forEach { type ->
                         item {
                             FilterChip(
                                 label = type.name.lowercase().replaceFirstChar { it.uppercase() },
@@ -87,7 +86,13 @@ fun HistoryScreen(
                 Spacer(modifier = Modifier.height(32.dp))
             }
 
-            if (filteredItems.isEmpty()) {
+            if (transactionsState.isLoading) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(top = 64.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+            } else if (filteredItems.isEmpty()) {
                 item {
                     Box(modifier = Modifier.fillMaxWidth().padding(top = 64.dp), contentAlignment = Alignment.Center) {
                         Text(
@@ -136,10 +141,12 @@ fun FilterChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
 @Composable
 fun HistoryItemRow(transaction: Transaction) {
     val (icon, tint) = when (transaction.type) {
-        TransactionType.PURCHASE -> Icons.Default.ShoppingBag to MaterialTheme.colorScheme.primary
-        TransactionType.TOPUP -> Icons.Default.AddCircle to Color(0xFF10B981)
-        TransactionType.REFUND -> Icons.Default.Undo to Color(0xFF3B82F6)
+        TransactionType.DEBIT -> Icons.Default.ShoppingBag to MaterialTheme.colorScheme.primary
+        TransactionType.CREDIT -> Icons.Default.AddCircle to Color(0xFF10B981)
+        else -> Icons.Default.HelpOutline to Color.Gray
     }
+
+    val amount = transaction.amount.toDoubleOrNull() ?: 0.0
 
     Row(
         modifier = Modifier
@@ -166,12 +173,12 @@ fun HistoryItemRow(transaction: Transaction) {
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = transaction.description,
+                text = if (transaction.description != "string") transaction.description else "Wallet Transaction",
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = transaction.date,
+                text = transaction.createdAt.take(16).replace("T", " "),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -179,18 +186,18 @@ fun HistoryItemRow(transaction: Transaction) {
 
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                text = "${if (transaction.amount > 0) "+" else "-"}${CurrencyFormat.doubleToBif(kotlin.math.abs(transaction.amount))} BIF",
+                text = "${if (transaction.type == TransactionType.CREDIT) "+" else "-"}${CurrencyFormat.doubleToBif(amount)} BIF",
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                color = if (transaction.amount > 0) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurface
+                color = if (transaction.type == TransactionType.CREDIT) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurface
             )
             
-            if (transaction.status != TransactionStatus.COMPLETED) {
+            if (transaction.status != TransactionStatus.COMPLETED && transaction.status != TransactionStatus.COMPLETED_OLD) {
                 Text(
                     text = transaction.status.name.lowercase().replaceFirstChar { it.uppercase() },
                     style = MaterialTheme.typography.labelSmall,
                     color = when(transaction.status) {
-                        TransactionStatus.PENDING -> Color(0xFFF59E0B)
-                        TransactionStatus.FAILED -> MaterialTheme.colorScheme.error
+                        TransactionStatus.PENDING, TransactionStatus.PENDING_OLD -> Color(0xFFF59E0B)
+                        TransactionStatus.FAILED, TransactionStatus.FAILED_OLD -> MaterialTheme.colorScheme.error
                         else -> Color.Unspecified
                     }
                 )

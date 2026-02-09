@@ -39,19 +39,35 @@ class KtorClient(private val client: HttpClient, private val baseUrl: String) {
         }.body()
 
     // --- Brands ---
-    suspend fun getCompanies(): ApiResponse<List<CompanyResponse>> =
-        client.get("$baseUrl/companies") {
-            contentType(ContentType.Application.Json)
-        }.body()
-
-    suspend fun getCompanyById(id: String): ApiResponse<CompanyResponse> =
+    suspend fun getBrand(id: String): ApiResponse<CompanyResponse> =
         client.get("$baseUrl/companies/$id") {
             contentType(ContentType.Application.Json)
         }.body()
 
+    suspend fun getProducts(id: String): ApiResponse<List<Product>> =
+        client.get("$baseUrl/companies/$id/products") {
+            contentType(ContentType.Application.Json)
+        }.body()
+
+    // subscriptions
+    suspend fun getSubscriptions(): ApiResponse<SubscriptionListResponse> =
+        client.get("$baseUrl/subscriptions") {
+            contentType(ContentType.Application.Json)
+        }.body()
+
+    suspend fun getSubscription(subscriptionId: Int): ApiResponse<SubscriptionResponse> =
+        client.get("$baseUrl/subscriptions/$subscriptionId") {
+            contentType(ContentType.Application.Json)
+        }.body()
+
     // --- Wallet ---
-    suspend fun getWallet(subscriptionId: String): ApiResponse<WalletResponse> =
+    suspend fun getWallet(subscriptionId: Int): ApiResponse<WalletResponse> =
         client.get("$baseUrl/subscriptions/$subscriptionId/wallet") {
+            contentType(ContentType.Application.Json)
+        }.body()
+
+    suspend fun getTransactions(subscriptionId: Int): ApiResponse<PaginatedResponse<Transaction>> =
+        client.get("$baseUrl/subscriptions/$subscriptionId/wallet/transactions") {
             contentType(ContentType.Application.Json)
         }.body()
 }

@@ -1,5 +1,6 @@
 package com.shopwallet.shopwallet.data.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // Auth Models
@@ -42,7 +43,7 @@ data class CompanyResponse(
     val name: String,
     val description: String? = null,
     val logo: String? = null,
-    val subscriptionId: String? = null // Assuming subscription ID is here
+    val subscriptionId: String? = null
 )
 
 @Serializable
@@ -50,12 +51,39 @@ data class CompanyListResponse(
     val companies: List<CompanyResponse>
 )
 
+@Serializable
+data class SubscriptionListResponse(
+    val subscriptions: List<Subscription>
+)
+
+@Serializable
+data class SubscriptionResponse(
+    val subscription: Subscription
+)
+
 // Wallet Models
 @Serializable
 data class WalletResponse(
-    val balance: Double,
-    val currency: String = "BIF",
-    val transactions: List<Transaction> = emptyList()
+    @SerialName("wallet_id") val walletId: Int,
+    val balance: String,
+    @SerialName("subscription_id") val subscriptionId: Int,
+    val company: WalletCompany
+)
+
+@Serializable
+data class WalletCompany(
+    val id: Int,
+    val name: String
+)
+
+// Transaction Models
+@Serializable
+data class PaginatedResponse<T>(
+    @SerialName("current_page") val currentPage: Int,
+    val data: List<T>,
+    val total: Int,
+    @SerialName("per_page") val perPage: Int,
+    @SerialName("last_page") val lastPage: Int
 )
 
 // Generic API Response

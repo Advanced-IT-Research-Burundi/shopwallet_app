@@ -20,12 +20,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -34,20 +28,21 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.shopwallet.shopwallet.data.brands
 import com.shopwallet.shopwallet.data.model.Brand
-import com.shopwallet.shopwallet.data.model.Product
+import com.shopwallet.shopwallet.data.model.Subscription
+import com.shopwallet.shopwallet.data.model.SubscriptionListResponse
 import com.shopwallet.shopwallet.ui.navigation.BottomNavBar
-import com.shopwallet.shopwallet.ui.navigation.BottomNavScreen
 import com.shopwallet.shopwallet.ui.navigation.MainScaffold
 import com.shopwallet.shopwallet.ui.theme.ShopWalletTheme
 import com.shopwallet.shopwallet.ui.theme.toColor
 import androidx.navigation.NavHostController
 import com.shopwallet.shopwallet.ui.navigation.Screen
 import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-
-import androidx.compose.runtime.collectAsState
+import com.shopwallet.shopwallet.utils.UiState
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 
 @Composable
 fun BrandMainScreen(
@@ -63,7 +58,7 @@ fun BrandMainScreen(
       else -> brand.name
   }
 
-  ShopWalletTheme(brandColor = brand.primaryColor.toColor()) {
+  ShopWalletTheme(brandColor = brand.color.toColor()) {
     MainScaffold(
       title = title,
       onLogout = onLogout,
@@ -71,8 +66,8 @@ fun BrandMainScreen(
         BottomNavBar(
           selectedRoute = currentRoute,
           onItemSelected = { screen ->
-              navController.navigate(screen.route.replace("{brandId}", brand.id)) {
-                  popUpTo(Screen.BrandDetails.createRoute(brand.id)) {
+              navController.navigate(screen.route.replace("{brandId}", brand.id.toString())) {
+                  popUpTo(Screen.BrandDetails.createRoute(brand.id.toString())) {
                       saveState = true
                   }
                   launchSingleTop = true
@@ -103,18 +98,52 @@ fun BrandMainScreen(
     }
   }
 }
-
 @Composable
-fun BrandsGrid(onBrandClick: (Brand) -> Unit) {
-  LazyVerticalGrid(
-    columns = GridCells.Fixed(2),
-    contentPadding = PaddingValues(16.dp),
-    horizontalArrangement = Arrangement.spacedBy(16.dp),
-    verticalArrangement = Arrangement.spacedBy(16.dp),
-    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
-  ) {
-    items(brands) { brand ->
-      BrandGridCard(brand, onClick = { onBrandClick(brand) })
+fun BrandsGrid(
+    subscriptionsState: UiState<SubscriptionListResponse>,
+    onBrandClick: (Brand) -> Unit,
+    onRetry: () -> Unit
+) {
+  Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    when {
+      subscriptionsState.isLoading -> {
+        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+      }
+      subscriptionsState.error != null -> {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(text = subscriptionsState.error, color = MaterialTheme.colorScheme.error)
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = onRetry) {
+                Text("Retry")
+            }
+        }
+      }
+      subscriptionsState.data != null -> {
+        val subscriptions = subscriptionsState.data.subscriptions
+        if (subscriptions.isEmpty()) {
+            Text(
+                text = "No subscriptions found",
+                modifier = Modifier.align(Alignment.Center),
+                style = MaterialTheme.typography.bodyLarge
+            )
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(subscriptions) { subscription ->
+                    BrandGridCard(subscription.company, onClick = { onBrandClick(subscription.company) })
+                }
+            }
+        }
+      }
     }
   }
 }

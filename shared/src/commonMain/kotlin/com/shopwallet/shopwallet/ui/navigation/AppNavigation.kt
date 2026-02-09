@@ -1,6 +1,7 @@
 package com.shopwallet.shopwallet.ui.navigation
 
-import com.shopwallet.shopwallet.data.brands
+import com.shopwallet.shopwallet.data.model.Brand
+import com.shopwallet.shopwallet.data.model.Subscription
 
 import androidx.compose.runtime.*
 import androidx.navigation.NavHostController
@@ -67,6 +68,13 @@ fun AppNavigation(
     }
 
     composable(Screen.Brands.route) {
+      val viewModel = koinViewModel<BrandViewModel>(key = "global") { parametersOf("") }
+      val subscriptions by viewModel.subscriptionsState.collectAsState()
+
+      LaunchedEffect(Unit) {
+          viewModel.getSubscriptions()
+      }
+
       MainScaffold(
         title = "ShopWallet",
         onLogout = { authViewModel.logout() },
@@ -79,18 +87,22 @@ fun AppNavigation(
                             popUpTo(Screen.Brands.route) { inclusive = true }
                         }
                     } else {
-                        // For Wallet and History, we need a brandId.
-                        // We use the first brand as a default if none is selected yet.
-                        val defaultBrandId = brands.firstOrNull()?.id ?: ""
-                        navController.navigate(screen.route.replace("{brandId}", defaultBrandId))
+                        val defaultBrandId = viewModel.subscriptions.value.firstOrNull()?.company?.id?.toString() ?: ""
+                        if (defaultBrandId.isNotEmpty()) {
+                            navController.navigate(screen.route.replace("{brandId}", defaultBrandId))
+                        }
                     }
                 }
             )
         }
       ) {
-        BrandsGrid(onBrandClick = { brand ->
-          navController.navigate(Screen.BrandDetails.createRoute(brand.id))
-        })
+        BrandsGrid(
+            subscriptionsState = subscriptions,
+                onBrandClick = { brand ->
+                    navController.navigate(Screen.BrandDetails.createRoute(brand.id.toString()))
+                },
+            onRetry = { viewModel.getSubscriptions() }
+        )
       }
     }
 
@@ -123,10 +135,19 @@ fun BrandContainer(
     currentRoute: String,
     onLogout: () -> Unit
 ) {
-    val brand = brands.find { it.id == brandId } ?: return
+    // Get a global ViewModel to find the brand from subscriptions
+    val globalViewModel = koinViewModel<BrandViewModel>(key = "global") { parametersOf("") }
+    val subscriptions by globalViewModel.subscriptions.collectAsState()
+    val subscription = subscriptions.find { it.company.id.toString() == brandId } ?: return
+    val brand = subscription.company
     
     // Get the ViewModel scoped to this brandId
     val viewModel = koinViewModel<BrandViewModel>(key = brandId) { parametersOf(brandId) }
+    
+    LaunchedEffect(subscription.id) {
+        viewModel.loadWallet(subscription.id)
+        viewModel.getTransactions(subscription.id)
+    }
     
     BrandMainScreen(
         brand = brand,

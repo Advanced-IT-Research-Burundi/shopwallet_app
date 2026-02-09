@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.shopwallet.shopwallet.data.model.Brand
 import com.shopwallet.shopwallet.data.model.Transaction
 import com.shopwallet.shopwallet.data.model.TransactionType
+import com.shopwallet.shopwallet.data.model.TransactionStatus
 import com.shopwallet.shopwallet.ui.theme.LocalBrandColor
 import com.shopwallet.shopwallet.utils.CurrencyFormat
 import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
@@ -33,14 +34,16 @@ fun WalletScreen(brand: Brand, viewModel: BrandViewModel) {
     var isAmountVisible by remember { mutableStateOf(true) }
     
     val walletState by viewModel.walletState.collectAsState()
+    val transactionsState by viewModel.transactionsState.collectAsState()
     
     // Get balance and transactions from wallet state
-    val walletBalance = walletState.data?.balance ?: 0.0
-    val transactions = walletState.data?.transactions ?: emptyList()
+    val walletBalance = walletState.data?.balance?.toDoubleOrNull() ?: 0.0
+    val transactions = transactionsState.data?.data ?: emptyList()
     
-    val monthlyTransactions = transactions.filter { it.date.contains("Today") || it.date.contains("Yesterday") || it.date.contains("Feb") }
-    val monthlyOrders = monthlyTransactions.count { it.type == TransactionType.PURCHASE }
-    val monthlyExpenses = monthlyTransactions.filter { it.type == TransactionType.PURCHASE }.sumOf { kotlin.math.abs(it.amount) }
+    // Monthly stats calculations
+    val monthlyOrders = transactions.count { it.type == TransactionType.DEBIT }
+    val monthlyExpenses = transactions.filter { it.type == TransactionType.DEBIT }
+        .sumOf { it.amount.toDoubleOrNull() ?: 0.0 }
 
     LazyColumn(
         modifier = Modifier
@@ -76,15 +79,33 @@ fun WalletScreen(brand: Brand, viewModel: BrandViewModel) {
             }
         }
 
-        itemsIndexed(transactions) { index, transaction ->
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                TransactionItem(transaction = transaction)
-                if (index < transactions.size - 1) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 4.dp),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        if (transactionsState.isLoading) {
+            item {
+                Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(modifier = Modifier.size(32.dp), color = brandColor)
+                }
+            }
+        } else if (transactions.isEmpty()) {
+            item {
+                Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "No recent transactions",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
+                }
+            }
+        } else {
+            itemsIndexed(transactions) { index, transaction ->
+                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                    TransactionItem(transaction = transaction)
+                    if (index < transactions.size - 1) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 4.dp),
+                            thickness = 0.5.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        )
+                    }
                 }
             }
         }
@@ -103,7 +124,7 @@ fun WalletDashboardHeader(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f), // Very subtle
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f),
         shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
     ) {
         Column(
@@ -141,31 +162,31 @@ fun WalletDashboardHeader(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                    Text(
-                        text = if (isAmountVisible) {
-                            CurrencyFormat.doubleToBif(balance)
-                        } else {
-                            "••••••"
-                        },
-                        style = MaterialTheme.typography.displayMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 40.sp,
-                            letterSpacing = if (isAmountVisible) (-1.5).sp else 2.sp
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    
-                    if (isAmountVisible) {
-                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "BIF",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.SemiBold
+                            text = if (isAmountVisible) {
+                                CurrencyFormat.doubleToBif(balance)
+                            } else {
+                                "••••••"
+                            },
+                            style = MaterialTheme.typography.displayMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 40.sp,
+                                letterSpacing = if (isAmountVisible) (-1.5).sp else 2.sp
                             ),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                            modifier = Modifier.padding(top = 8.dp)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
-                    }
+                        
+                        if (isAmountVisible) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "BIF",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.SemiBold
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
                         
                         IconButton(
                             onClick = onToggleVisibility,
@@ -179,33 +200,6 @@ fun WalletDashboardHeader(
                             )
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // Top Up Button hidden to be reactivated later with the logic
-                    /*
-                    Button(
-                        onClick = onTopUpClick,
-                        modifier = Modifier.height(40.dp),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = brandColor,
-                            contentColor = Color.White
-                        ),
-                        contentPadding = PaddingValues(horizontal = 20.dp),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Add,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Top Up",
-                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
-                        )
-                    }*/
                 }
 
                 // Brand Indicator
@@ -288,10 +282,12 @@ fun WalletDashboardHeader(
 @Composable
 fun TransactionItem(transaction: Transaction) {
     val (icon, tint) = when (transaction.type) {
-        TransactionType.PURCHASE -> Icons.Default.ShoppingBag to MaterialTheme.colorScheme.primary
-        TransactionType.TOPUP -> Icons.Default.AddCircle to Color(0xFF10B981)
-        TransactionType.REFUND -> Icons.Default.Undo to Color(0xFF3B82F6)
+        TransactionType.DEBIT -> Icons.Default.ShoppingBag to MaterialTheme.colorScheme.primary
+        TransactionType.CREDIT -> Icons.Default.AddCircle to Color(0xFF10B981)
+        else -> Icons.Default.HelpOutline to Color.Gray
     }
+
+    val amount = transaction.amount.toDoubleOrNull() ?: 0.0
 
     Row(
         modifier = Modifier
@@ -318,21 +314,23 @@ fun TransactionItem(transaction: Transaction) {
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = transaction.description,
+                text = if (transaction.description != "string") transaction.description else "Wallet Transaction",
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = transaction.date,
+                text = transaction.createdAt.take(10), // Take only the date part YYYY-MM-DD
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
         Text(
-            text = "${if (transaction.amount > 0) "+" else "-"}${CurrencyFormat.doubleToBif(kotlin.math.abs(transaction.amount))} BIF",
+            text = "${if (transaction.type == TransactionType.CREDIT) "+" else "-"}${CurrencyFormat.doubleToBif(amount)} BIF",
             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-            color = if (transaction.amount > 0) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurface
+            color = if (transaction.type == TransactionType.CREDIT) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurface
         )
     }
 }
