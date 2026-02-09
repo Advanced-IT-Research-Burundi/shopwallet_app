@@ -20,19 +20,19 @@ class AuthViewModel(
   private val _isLoggedIn = MutableStateFlow(authRepo.getToken() != null)
   val isLoggedIn = _isLoggedIn.asStateFlow()
 
+  private val _phoneNumber = MutableStateFlow("")
+  val phoneNumber = _phoneNumber.asStateFlow()
 
-
-
-
+  fun setPhone(number: String) = _phoneNumber.tryEmit(number)
     private val _currentUser = MutableStateFlow<UserResponse?>(null)
     val currentUser = _currentUser.asStateFlow()
 
     private val _otpRequestState = MutableStateFlow(UiState<OtpResponse>())
     val otpRequestState = _otpRequestState.asStateFlow()
-    fun requestOtp(phone: String) {
+    fun requestOtp() {
         launchWithState(
             stateFlow = _otpRequestState,
-            block = { authRepo.requestOtp(phone) },
+            block = { authRepo.requestOtp(_phoneNumber.value) },
             onSuccess = { otpData ->
         otpData?.otp?.let { otp ->
           notificationService.showValueNotification("Your OTP code is $otp. It will expire in 30 minutes")

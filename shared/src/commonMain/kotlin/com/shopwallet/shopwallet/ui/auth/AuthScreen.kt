@@ -1,6 +1,7 @@
 package com.shopwallet.shopwallet.ui.auth
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,7 +52,7 @@ fun AuthScreen(
 ) {
   val viewModel = koinViewModel<AuthViewModel>()
   val otpRequestState by viewModel.otpRequestState.collectAsState()
-  var phoneNumber by remember { mutableStateOf("") }
+  val phoneNumber by viewModel.phoneNumber.collectAsState()
 
   LaunchedEffect(Unit) {
     viewModel.resetStates()
@@ -100,17 +101,12 @@ fun AuthScreen(
             color = MaterialTheme.colorScheme.primary
           ) {
             Box(contentAlignment = Alignment.Center) {
-              val isLoading = otpRequestState.isLoading
-              if (isLoading) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
-              } else {
-                Icon(
-                  imageVector = Icons.Default.PhoneAndroid,
-                  contentDescription = null,
-                  tint = MaterialTheme.colorScheme.onPrimary,
-                  modifier = Modifier.size(32.dp)
-                )
-              }
+              Icon(
+                imageVector = Icons.Default.PhoneAndroid,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(32.dp)
+              )
             }
           }
 
@@ -139,10 +135,10 @@ fun AuthScreen(
 
           PhoneInputStep(
             phoneNumber = phoneNumber,
-            onPhoneChange = { phoneNumber = it },
+            onPhoneChange = { viewModel.setPhone(it) },
             onContinue = {
               if (phoneNumber.length == 8) {
-                viewModel.requestOtp(phoneNumber)
+                viewModel.requestOtp()
               }
             },
             isLoading = otpRequestState.isLoading
@@ -171,6 +167,7 @@ fun OtpScreen(
 ) {
   val viewModel = koinViewModel<AuthViewModel>()
   val verifyOtpState by viewModel.verifyOtpState.collectAsState()
+  val otpRequestState by viewModel.otpRequestState.collectAsState()
   var otpCode by remember { mutableStateOf("") }
 
   LaunchedEffect(Unit) {
@@ -267,10 +264,12 @@ fun OtpScreen(
           Spacer(modifier = Modifier.height(48.dp))
 
           Text(
-            text = "Didn't receive the code? Resend",
+            text = if (otpRequestState.isLoading) "Requesting code..." else "Didn't receive the code? Resend",
             style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp, color = MaterialTheme.colorScheme.primary),
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 16.dp).clickable {
+              viewModel.requestOtp()
+            }
           )
         }
       }
@@ -288,7 +287,7 @@ fun PhoneInputStep(
   Column(modifier = Modifier.fillMaxWidth()) {
     Text(
       text = "Phone Number",
-      style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium), // text-sm font-medium
+      style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
       color = MaterialTheme.colorScheme.onBackground
     )
     Spacer(modifier = Modifier.height(8.dp))

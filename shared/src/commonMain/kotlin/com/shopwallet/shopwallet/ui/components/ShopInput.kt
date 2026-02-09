@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -25,60 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-@Composable
-fun ShopInput(
-  value: String,
-  onValueChange: (String) -> Unit,
-  modifier: Modifier = Modifier,
-  placeholder: String? = null,
-  label: String? = null,
-  enabled: Boolean = true,
-  readOnly: Boolean = false,
-  textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
-  keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-  keyboardActions: KeyboardActions = KeyboardActions.Default,
-  visualTransformation: VisualTransformation = VisualTransformation.None,
-  isError: Boolean = false,
-  maxLines: Int = 1,
-  leadingIcon: @Composable (() -> Unit)? = null,
-  trailingIcon: @Composable (() -> Unit)? = null
-) {
-
-  OutlinedTextField(
-    value = value,
-    onValueChange = onValueChange,
-    modifier = modifier.fillMaxWidth(),
-    enabled = enabled,
-    readOnly = readOnly,
-    textStyle = textStyle,
-    label = if (label != null) { { Text(label) } } else null,
-    placeholder = if (placeholder != null) { { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) } } else null,
-    leadingIcon = leadingIcon,
-    trailingIcon = trailingIcon,
-    isError = isError,
-    visualTransformation = visualTransformation,
-    keyboardOptions = keyboardOptions,
-    keyboardActions = keyboardActions,
-    maxLines = maxLines,
-    shape = RoundedCornerShape(8.dp),
-    colors = OutlinedTextFieldDefaults.colors(
-      focusedContainerColor = MaterialTheme.colorScheme.surface,
-      unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-      disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-      focusedBorderColor = MaterialTheme.colorScheme.primary, // ring
-      unfocusedBorderColor = MaterialTheme.colorScheme.outline, // border-input
-      cursorColor = MaterialTheme.colorScheme.primary,
-      errorBorderColor = MaterialTheme.colorScheme.error,
-    )
-  )
-}
 
 @Composable
 fun ShopOtpInput(
@@ -140,7 +90,7 @@ private fun OtpCell(
       text = char,
       style = MaterialTheme.typography.headlineSmall.copy(
         fontWeight = FontWeight.Bold,
-        color = Color.Black
+        color = MaterialTheme.colorScheme.onBackground
       )
     )
   }
