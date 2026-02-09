@@ -51,7 +51,7 @@ class BrandViewModel(
             _subscriptionsState,
             block = { brandRepo.getSubscriptions() },
             onSuccess = {
-                _subscriptions.value = it.subscriptions
+                _subscriptions.value = it?.subscriptions ?: emptyList()
             },
             onFailure = { e->
                 e.message?.let { Logger.e("SUB", it)}

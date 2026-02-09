@@ -15,17 +15,17 @@ import kotlinx.serialization.json.jsonPrimitive
 fun <T> ViewModel.launchWithState(
   stateFlow: MutableStateFlow<UiState<T>>,
   block: suspend () -> Result<ApiResponse<T>>,
-  onSuccess: (T) -> Unit = {},
+  onSuccess: (T?) -> Unit = {},
   onFailure: (Throwable) -> Unit = {},
 ) {
-  stateFlow.value = _root_ide_package_.com.shopwallet.shopwallet.utils.UiState(isLoading = true)
+  stateFlow.value = UiState(isLoading = true)
 
   viewModelScope.launch {
     block().fold(
       onSuccess = { response ->
 
-        if (response.success == true && response.data != null) {
-          stateFlow.value = _root_ide_package_.com.shopwallet.shopwallet.utils.UiState(
+        if (response.success == true) {
+          stateFlow.value = UiState(
             message = response.message,
             data = response.data
           )
@@ -33,11 +33,11 @@ fun <T> ViewModel.launchWithState(
         } else {
           val errorMessage = parseApiError(response.error, response.message)
           stateFlow.value =
-            _root_ide_package_.com.shopwallet.shopwallet.utils.UiState(error = errorMessage)
+            UiState(error = errorMessage)
         }
       },
       onFailure = { e ->
-        stateFlow.value = _root_ide_package_.com.shopwallet.shopwallet.utils.UiState(
+        stateFlow.value = UiState(
           error = e.message ?: "Erreur inconnue"
         )
         onFailure(e)

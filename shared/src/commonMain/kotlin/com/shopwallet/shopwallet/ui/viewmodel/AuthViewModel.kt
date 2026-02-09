@@ -32,12 +32,12 @@ class AuthViewModel(
             stateFlow = _otpRequestState,
             block = { authRepo.requestOtp(phone) },
             onSuccess = { otpData ->
-                otpData.otp?.let { otp ->
-                    notificationService.showValueNotification("Your OTP code is $otp. It will expire in 30 minutes")
-                } ?: otpData.message?.let { msg ->
-                    notificationService.showValueNotification(msg)
-                }
-            },
+        otpData?.otp?.let { otp ->
+          notificationService.showValueNotification("Your OTP code is $otp. It will expire in 30 minutes")
+        } ?: otpData?.message?.let { msg ->
+          notificationService.showValueNotification(msg)
+        }
+      },
             onFailure = { error ->
                 _otpRequestState.value = UiState(error = error.message ?: "Failed to request OTP")
             }
@@ -51,9 +51,9 @@ class AuthViewModel(
             stateFlow = _verifyOtpState,
             block = { authRepo.verifyOtp(phone, otp) },
             onSuccess = { resp ->
-                _verifyOtpState.value = UiState(data = resp)
-                _currentUser.value = resp.user
-            },
+        _verifyOtpState.value = UiState(data = resp)
+        _currentUser.value = resp?.user
+      },
             onFailure = { error ->
                 _verifyOtpState.value = UiState(error = error.message ?: "Failed to verify OTP")
             }
@@ -77,5 +77,6 @@ class AuthViewModel(
     fun resetStates() {
         _otpRequestState.value = UiState()
         _verifyOtpState.value = UiState()
+        _logoutState.value = UiState()
     }
 }

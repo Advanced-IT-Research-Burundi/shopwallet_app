@@ -31,18 +31,27 @@ fun AppNavigation(
   navController: NavHostController
 ) {
   val authViewModel = koinViewModel<AuthViewModel>()
+  val currentUser by authViewModel.currentUser.collectAsState()
   val logoutState by authViewModel.logoutState.collectAsState()
+  val initialIsLoggedIn = remember { authViewModel.isLoggedIn() }
 
-  LaunchedEffect(logoutState.data) {
-    if (logoutState.data != null) {
+  LaunchedEffect(currentUser, logoutState.data) {
+    if (currentUser != null) {
+      // Login transition
+      navController.navigate(Screen.Brands.route) {
+        popUpTo(0) { inclusive = true }
+      }
+    } else if (logoutState.data != null || (initialIsLoggedIn && !authViewModel.isLoggedIn())) {
+      // Logout transition (API success OR session cleared)
+      authViewModel.resetStates()
       navController.navigate(Screen.Auth.route) {
         popUpTo(0) { inclusive = true }
       }
     }
   }
 
-  // Determine start destination
-  val startDestination = if (authViewModel.isLoggedIn()) {
+  // Determine start destination only once at startup
+  val startDestination = if (initialIsLoggedIn) {
       Screen.Brands.route
   } else {
       Screen.Auth.route
