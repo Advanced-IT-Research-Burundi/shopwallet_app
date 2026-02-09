@@ -84,6 +84,11 @@ fun AppNavigation(
       MainScaffold(
         title = "ShopWallet",
         onLogout = { authViewModel.logout() },
+        onFabClick = {
+            navController.navigate(Screen.Brands.route) {
+                popUpTo(0) { inclusive = true }
+            }
+        },
         bottomBar = {
             BottomNavBar(
                 selectedRoute = Screen.Brands.route,

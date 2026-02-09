@@ -43,6 +43,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Button
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import com.shopwallet.shopwallet.ui.navigation.BottomNavScreen
 
 @Composable
 fun BrandMainScreen(
@@ -62,16 +63,27 @@ fun BrandMainScreen(
     MainScaffold(
       title = title,
       onLogout = onLogout,
+      onFabClick = {
+          navController.navigate(Screen.Brands.route) {
+              popUpTo(Screen.Brands.route) { inclusive = true }
+          }
+      },
       bottomBar = {
         BottomNavBar(
           selectedRoute = currentRoute,
           onItemSelected = { screen ->
-              navController.navigate(screen.route.replace("{brandId}", brand.id.toString())) {
-                  popUpTo(Screen.BrandDetails.createRoute(brand.id.toString())) {
-                      saveState = true
+              if (screen == BottomNavScreen.Brand) {
+                  navController.navigate(Screen.Brands.route) {
+                      popUpTo(Screen.Brands.route) { inclusive = true }
                   }
-                  launchSingleTop = true
-                  restoreState = true
+              } else {
+                  navController.navigate(screen.route.replace("{brandId}", brand.id.toString())) {
+                      popUpTo(Screen.BrandDetails.createRoute(brand.id.toString())) {
+                          saveState = true
+                      }
+                      launchSingleTop = true
+                      restoreState = true
+                  }
               }
           }
         )

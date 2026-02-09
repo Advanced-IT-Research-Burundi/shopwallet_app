@@ -1,27 +1,38 @@
 package com.shopwallet.shopwallet.ui.navigation
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -31,23 +42,75 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
+
+/**
+ * Custom shape for the BottomAppBar with a smooth concave cutout at the top center.
+ * Uses Bézier curves (cubicTo) for a fluid and state-of-the-art transition.
+ */
+class CustomBottomBarShape : Shape {
+    override fun createOutline(
+        size: Size,
+        layoutDirection: androidx.compose.ui.unit.LayoutDirection,
+        density: androidx.compose.ui.unit.Density
+    ): androidx.compose.ui.graphics.Outline {
+        return androidx.compose.ui.graphics.Outline.Generic(Path().apply {
+            val notchWidth = 140.dp.value * density.density
+            val notchHeight = 42.dp.value * density.density
+            val cornerRadius = 24.dp.value * density.density
+            val centerX = size.width / 2
+
+            // Top-left corner
+            moveTo(0f, cornerRadius)
+            quadraticTo(0f, 0f, cornerRadius, 0f)
+            
+            // Side line to the start of the notch
+            lineTo(centerX - notchWidth * 0.65f, 0f)
+            
+            // Smooth concave notch using Cubic Bézier curves for a premium look
+            cubicTo(
+                centerX - notchWidth * 0.40f, 0f,
+                centerX - notchWidth * 0.35f, notchHeight,
+                centerX, notchHeight
+            )
+            cubicTo(
+                centerX + notchWidth * 0.35f, notchHeight,
+                centerX + notchWidth * 0.40f, 0f,
+                centerX + notchWidth * 0.65f, 0f
+            )
+            
+            // Side line to the top-right corner
+            lineTo(size.width - cornerRadius, 0f)
+            quadraticTo(size.width, 0f, size.width, cornerRadius)
+            
+            // Bottom part of the bar
+            lineTo(size.width, size.height)
+            lineTo(0f, size.height)
+            close()
+        })
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScaffold(
   title: String,
   snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
-  actions: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {},
+  actions: @Composable RowScope.() -> Unit = {},
   onLogout: () -> Unit = {},
   bottomBar: @Composable () -> Unit = {},
+  onFabClick: () -> Unit = {},
   content: @Composable () -> Unit
 ) {
   Scaffold(
@@ -78,12 +141,32 @@ fun MainScaffold(
       )
     },
     bottomBar = bottomBar,
+    floatingActionButton = {
+        // Render target center FAB only if bottomBar is present
+        if (bottomBar != @Composable {}) {
+            FloatingActionButton(
+                onClick = onFabClick,
+                shape = CircleShape,
+                containerColor = Color(0xFFFEF200), // Distinctive Yellow
+                contentColor = Color(0xFF007BC4),    // Blue icon
+                modifier = Modifier.size(64.dp).offset(y = 48.dp) // Offset to sit exactly in the cutout
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Storefront,
+                    contentDescription = "Brands",
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+    },
+    floatingActionButtonPosition = FabPosition.Center,
     snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
   ) { innerPadding ->
     Box(
       modifier = Modifier
         .padding(innerPadding)
         .consumeWindowInsets(innerPadding)
+        .fillMaxSize()
     ) {
       content()
     }
@@ -95,55 +178,84 @@ fun BottomNavBar(
   selectedRoute: String?,
   onItemSelected: (BottomNavScreen) -> Unit
 ) {
-  Surface(
-    color = MaterialTheme.colorScheme.background,
-    shadowElevation = 8.dp,
-    modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars)
-  ) {
-    NavigationBar(
-      containerColor = Color.Transparent,
-      tonalElevation = 0.dp,
-      modifier = Modifier.height(64.dp),
-      windowInsets = WindowInsets(0.dp)
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .height(82.dp)
+            .shadow(elevation = 16.dp, shape = CustomBottomBarShape()),
+        shape = CustomBottomBarShape(),
+        color = Color.White,
+        tonalElevation = 4.dp
     ) {
-      val items = listOf(
-        BottomNavScreen.Wallet,
-        BottomNavScreen.Brand,
-        BottomNavScreen.History
-      )
+        Row(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // LEFT ELEMENT
+            NavBarItem(
+                screen = BottomNavScreen.Wallet,
+                isSelected = selectedRoute?.contains("/wallet") == true,
+                onClick = { onItemSelected(BottomNavScreen.Wallet) }
+            )
 
-      items.forEach { screen ->
-        val icon = when(screen) {
-          BottomNavScreen.Brand -> Icons.Filled.Storefront
-          BottomNavScreen.Wallet -> Icons.Filled.AccountBalanceWallet
-          BottomNavScreen.History -> Icons.Filled.History
+            // DYNAMIC SPACE FOR CENTER FAB
+            Spacer(modifier = Modifier.width(72.dp))
+
+            // RIGHT ELEMENT
+            NavBarItem(
+                screen = BottomNavScreen.History,
+                isSelected = selectedRoute?.contains("/history") == true,
+                onClick = { onItemSelected(BottomNavScreen.History) }
+            )
         }
-        
-        NavigationBarItem(
-          icon = { Icon(icon, contentDescription = null, modifier = Modifier.size(22.dp)) },
-          label = { 
-            Text(
-              text = stringResource(screen.labelRes), 
-              style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis,
-              textAlign = TextAlign.Center
-            ) 
-          },
-          selected = when(screen) {
-            BottomNavScreen.Wallet -> selectedRoute?.contains("/wallet") == true
-            BottomNavScreen.History -> selectedRoute?.contains("/history") == true
-            BottomNavScreen.Brand -> selectedRoute == "brands" || 
-                                    (selectedRoute?.contains("brand/") == true && 
-                                     !selectedRoute.contains("/wallet") && 
-                                     !selectedRoute.contains("/history"))
-          },
-          onClick = { onItemSelected(screen) },
-          colors = NavigationBarItemDefaults.colors(
-            indicatorColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
-          )
-        )
-      }
     }
-  }
+}
+
+@Composable
+private fun NavBarItem(
+    screen: BottomNavScreen,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val activeColor = Color(0xFF0077CC) // Target Blue
+    val inactiveColor = Color.LightGray
+    
+    val icon = when (screen) {
+        BottomNavScreen.Wallet -> Icons.Filled.AccountBalanceWallet
+        BottomNavScreen.History -> Icons.Filled.History
+        else -> Icons.Filled.Storefront
+    }
+
+    Column(
+        modifier = Modifier
+            .width(80.dp)
+            .fillMaxHeight()
+            .clickable(
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = if (isSelected) activeColor else inactiveColor,
+            modifier = Modifier.size(28.dp)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = stringResource(screen.labelRes),
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                fontSize = 12.sp
+            ),
+            color = if (isSelected) activeColor else inactiveColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
 }
