@@ -13,8 +13,14 @@ import com.shopwallet.shopwallet.ui.viewmodel.AuthViewModel
 import com.shopwallet.shopwallet.ui.auth.AuthScreen
 import com.shopwallet.shopwallet.ui.auth.OtpScreen
 import com.shopwallet.shopwallet.ui.screens.BrandMainScreen
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Modifier
 import com.shopwallet.shopwallet.ui.screens.BrandsGrid
-
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.parameter.parametersOf
@@ -138,7 +144,30 @@ fun BrandContainer(
     // Get a global ViewModel to find the brand from subscriptions
     val globalViewModel = koinViewModel<BrandViewModel>(key = "global") { parametersOf("") }
     val subscriptions by globalViewModel.subscriptions.collectAsState()
-    val subscription = subscriptions.find { it.company.id.toString() == brandId } ?: return
+    val subscriptionsState by globalViewModel.subscriptionsState.collectAsState()
+    
+    val subscription = subscriptions.find { it.company.id.toString() == brandId }
+    
+    LaunchedEffect(Unit) {
+        if (subscriptions.isEmpty()) {
+            globalViewModel.getSubscriptions()
+        }
+    }
+    
+    if (subscription == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            if (subscriptionsState.isLoading) {
+                CircularProgressIndicator()
+            } else if (subscriptionsState.error != null) {
+                Text(text = subscriptionsState.error ?: "Error loading subscriptions", color = MaterialTheme.colorScheme.error)
+            } else if (!subscriptionsState.isLoading && subscriptions.isEmpty()) {
+                // If it's not loading and still empty after getSubscriptions, it might be an actual empty state
+                 Text("No subscriptions found")
+            }
+        }
+        return
+    }
+    
     val brand = subscription.company
     
     // Get the ViewModel scoped to this brandId
