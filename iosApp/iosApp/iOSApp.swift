@@ -1,5 +1,5 @@
 import SwiftUI
-import ComposeApp
+import SharedWithYou
 
 @main
 struct iOSApp: App {
