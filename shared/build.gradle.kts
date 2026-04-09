@@ -51,8 +51,7 @@ kotlin {
       
 
       // navigation
-      implementation(libs.androidx.navigation.compose)
-      // ktor client and serialization
+        implementation("org.jetbrains.compose.navigation:navigation:2.7.0-alpha07")      // ktor client and serialization
       implementation(libs.ktor.client.core)
       implementation(libs.ktor.client.content.negotiation)
       implementation(libs.ktor.serialization.kotlinx.json)
@@ -68,7 +67,7 @@ kotlin {
       implementation(libs.multiplatform.settings.serialization)
       
       // Datetime
-      implementation(libs.kotlinx.datetime)
+        implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
 
       // Koin
       implementation(libs.koin.core)

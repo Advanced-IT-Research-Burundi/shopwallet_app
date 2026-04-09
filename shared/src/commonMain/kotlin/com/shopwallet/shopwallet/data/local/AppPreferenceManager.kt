@@ -4,7 +4,7 @@ import com.russhwolf.settings.Settings
 import com.shopwallet.shopwallet.data.model.CartItem
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.datetime.Clock
+import kotlin.time.TimeSource
 import kotlin.time.Duration.Companion.minutes
 
 /**
@@ -60,7 +60,10 @@ class AppPreferenceManager(val settings: Settings) {
         }
 
     fun updateLastActiveTime() {
-        settings.putLong(KEY_LAST_ACTIVE_TIME, Clock.System.now().toEpochMilliseconds())
+        settings.putLong(
+            KEY_LAST_ACTIVE_TIME,
+            TimeSource.Monotonic.markNow().elapsedNow().inWholeMilliseconds
+        )
     }
 
     fun shouldShowPinScreen(): Boolean {
@@ -69,10 +72,9 @@ class AppPreferenceManager(val settings: Settings) {
         val lastActiveMs = settings.getLong(KEY_LAST_ACTIVE_TIME, 0L)
         if (lastActiveMs == 0L) return true
 
-        val now = Clock.System.now().toEpochMilliseconds()
+        val now = TimeSource.Monotonic.markNow().elapsedNow().inWholeMilliseconds
         val diff = now - lastActiveMs
 
-        // Use .minutes for readability
         return diff > 5.minutes.inWholeMilliseconds
     }
     
