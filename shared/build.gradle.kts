@@ -50,8 +50,10 @@ kotlin {
       implementation("org.jetbrains.compose.material:material-icons-extended:1.7.0")
       
 
-      // navigation
-        implementation("org.jetbrains.compose.navigation:navigation:2.7.0-alpha07")      // ktor client and serialization
+      // Navigation for Compose Multiplatform
+      implementation(libs.androidx.navigation.compose)
+
+      // ktor client and serialization
       implementation(libs.ktor.client.core)
       implementation(libs.ktor.client.content.negotiation)
       implementation(libs.ktor.serialization.kotlinx.json)
@@ -112,4 +114,3 @@ android {
 dependencies {
   debugImplementation(libs.compose.uiTooling)
 }
-
