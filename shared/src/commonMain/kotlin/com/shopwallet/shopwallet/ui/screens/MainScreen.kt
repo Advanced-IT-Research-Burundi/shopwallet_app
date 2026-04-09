@@ -35,7 +35,7 @@ import com.shopwallet.shopwallet.ui.navigation.BottomNavBar
 import com.shopwallet.shopwallet.ui.navigation.MainScaffold
 import com.shopwallet.shopwallet.ui.theme.ShopWalletTheme
 import com.shopwallet.shopwallet.ui.theme.toColor
-import androidx.navigation.NavHostController
+import com.shopwallet.shopwallet.ui.navigation.AppNavigator
 import com.shopwallet.shopwallet.ui.navigation.Screen
 import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
 import com.shopwallet.shopwallet.utils.UiState
@@ -48,57 +48,58 @@ import com.shopwallet.shopwallet.ui.navigation.BottomNavScreen
 @Composable
 fun BrandMainScreen(
     brand: Brand,
-    currentRoute: String,
-    navController: NavHostController,
+    currentScreen: Screen,
+    navigator: AppNavigator,
     viewModel: BrandViewModel,
 ) {
-  val title = when {
-      currentRoute.contains("/wallet") -> "My Wallet"
-      currentRoute.contains("/history") -> "History"
+  val title = when (currentScreen) {
+      is Screen.Wallet -> "My Wallet"
+      is Screen.History -> "History"
       else -> brand.name
+  }
+
+  val selectedRoute = when (currentScreen) {
+      is Screen.Wallet -> BottomNavScreen.Wallet
+      is Screen.History -> BottomNavScreen.History
+      else -> BottomNavScreen.Brand
   }
 
   ShopWalletTheme(brandColor = brand.color.toColor()) {
     MainScaffold(
       title = title,
       onFabClick = {
-          navController.navigate(Screen.Brands.route) {
-              popUpTo(Screen.Brands.route) { inclusive = true }
-          }
+          navigator.navigate(Screen.Brands, clearStack = true)
       },
       bottomBar = {
         BottomNavBar(
-          selectedRoute = currentRoute,
+          selectedRoute = selectedRoute,
           onItemSelected = { screen ->
               if (screen == BottomNavScreen.Brand) {
-                  navController.navigate(Screen.Brands.route) {
-                      popUpTo(Screen.Brands.route) { inclusive = true }
-                  }
+                  navigator.navigate(Screen.Brands, clearStack = true)
               } else {
-                  navController.navigate(screen.route.replace("{brandId}", brand.id.toString())) {
-                      popUpTo(Screen.BrandDetails.createRoute(brand.id.toString())) {
-                          saveState = true
-                      }
-                      launchSingleTop = true
-                      restoreState = true
+                  val newScreen = when (screen) {
+                      is BottomNavScreen.Wallet -> Screen.Wallet(brand.id.toString())
+                      is BottomNavScreen.History -> Screen.History(brand.id.toString())
+                      else -> Screen.BrandDetails(brand.id.toString())
                   }
+                  navigator.navigate(newScreen, popUpToClass = Screen.BrandDetails::class)
               }
           }
         )
       }
     ) {
-        when {
-            currentRoute.contains("/wallet") -> {
+        when (currentScreen) {
+            is Screen.Wallet -> {
                 WalletScreen(
                     brand = brand,
                     viewModel = viewModel
                 )
             }
-            currentRoute.contains("/history") -> {
+            is Screen.History -> {
                 HistoryScreen(viewModel = viewModel)
             }
             else -> {
-                // Default to Wallet if route is unknown
+                // Default to Wallet if screen is unknown
                 WalletScreen(
                     brand = brand,
                     viewModel = viewModel

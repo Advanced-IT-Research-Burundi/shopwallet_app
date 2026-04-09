@@ -10,7 +10,6 @@ import com.shopwallet.shopwallet.data.repository.BrandRepo
 import com.shopwallet.shopwallet.data.repository.BrandRepoImpl
 import com.shopwallet.shopwallet.data.repository.WalletRepo
 import com.shopwallet.shopwallet.data.repository.WalletRepoImpl
-import com.shopwallet.shopwallet.notification.NotificationService
 import org.koin.dsl.module
 
 val appModule = module {
@@ -29,7 +28,4 @@ val appModule = module {
     single<AuthRepo> { AuthRepoImpl(get(), get()) }
     single<BrandRepo> { BrandRepoImpl(get()) }
     single<WalletRepo> { WalletRepoImpl(get()) }
-
-    // Services
-    single { NotificationService() }
 }

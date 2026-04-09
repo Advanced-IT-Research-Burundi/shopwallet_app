@@ -51,7 +51,6 @@ kotlin {
       
 
       // Navigation for Compose Multiplatform
-      implementation(libs.androidx.navigation.compose)
 
       // ktor client and serialization
       implementation(libs.ktor.client.core)
@@ -76,8 +75,6 @@ kotlin {
       implementation(libs.koin.compose)
       implementation(libs.koin.compose.viewmodel)
 
-      // kmpnotifier
-      api("io.github.mirzemehdi:kmpnotifier:1.2.1")
     }
     iosMain.dependencies {
       implementation(libs.ktor.client.darwin)

@@ -1,179 +1,140 @@
 package com.shopwallet.shopwallet.ui.navigation
 
-import com.shopwallet.shopwallet.data.model.Brand
-import com.shopwallet.shopwallet.data.model.Subscription
-
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
-import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
-import com.shopwallet.shopwallet.ui.viewmodel.AuthViewModel
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import com.shopwallet.shopwallet.ui.auth.AuthScreen
 import com.shopwallet.shopwallet.ui.auth.OtpScreen
 import com.shopwallet.shopwallet.ui.screens.BrandMainScreen
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Alignment
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.Modifier
 import com.shopwallet.shopwallet.ui.screens.BrandsGrid
+import com.shopwallet.shopwallet.ui.viewmodel.AuthViewModel
+import com.shopwallet.shopwallet.ui.viewmodel.BrandViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.parameter.parametersOf
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
-fun AppNavigation(
-  navController: NavHostController,
-) {
-  val authViewModel = koinViewModel<AuthViewModel>()
-  val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
-  val logoutState by authViewModel.logoutState.collectAsState()
-  val initialIsLoggedIn by authViewModel.isLoggedIn.collectAsState()
+fun AppNavigation() {
+    val authViewModel = koinViewModel<AuthViewModel>()
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
+    val logoutState by authViewModel.logoutState.collectAsState()
+    val initialIsLoggedIn by authViewModel.isLoggedIn.collectAsState()
 
-  LaunchedEffect(isLoggedIn) {
-    if (isLoggedIn && !initialIsLoggedIn) {
-      // Successful login transition
-      navController.navigate(Screen.Brands.route) {
-        popUpTo(0) { inclusive = true }
-      }
-    } else if (!isLoggedIn && (initialIsLoggedIn || logoutState.data != null)) {
-      // Logout transition
-      authViewModel.resetStates()
-      navController.navigate(Screen.Auth.route) {
-        popUpTo(0) { inclusive = true }
-      }
-    }
-  }
+    val startDestination = if (initialIsLoggedIn) Screen.Brands else Screen.Auth
+    val navigator = remember { AppNavigator(startDestination) }
 
-  // Determine start destination only once at startup
-  val startDestination = if (initialIsLoggedIn) {
-      Screen.Brands.route
-  } else {
-      Screen.Auth.route
-  }
-
-  NavHost(
-    navController = navController,
-    startDestination = startDestination
-  ) {
-    composable(Screen.Auth.route) {
-      AuthScreen(onOtpRequested = { phone ->
-        navController.navigate(Screen.Otp.createRoute(phone))
-      })
-    }
-    
-    composable(Screen.Otp.route) { backStackEntry ->
-      val phone = backStackEntry.arguments?.getString("phone") ?: ""
-      OtpScreen(
-        phone = phone,
-        onAuthenticated = {
-          navController.navigate(Screen.Brands.route) {
-            popUpTo(Screen.Auth.route) { inclusive = true }
-          }
-        },
-        onBack = {
-          navController.popBackStack()
+    LaunchedEffect(isLoggedIn) {
+        if (isLoggedIn && !initialIsLoggedIn) {
+            navigator.navigate(Screen.Brands, clearStack = true)
+        } else if (!isLoggedIn && (initialIsLoggedIn || logoutState.data != null)) {
+            authViewModel.resetStates()
+            navigator.navigate(Screen.Auth, clearStack = true)
         }
-      )
     }
 
-    composable(Screen.Brands.route) {
-      val viewModel = koinViewModel<BrandViewModel>(key = "global") { parametersOf("") }
-      val subscriptions by viewModel.subscriptionsState.collectAsState()
-      val logoutState by authViewModel.logoutState.collectAsState()
-
-
-      LaunchedEffect(Unit) {
-          viewModel.getSubscriptions()
-      }
-
-      MainScaffold(
-        title = "ShopWallet",
-        onLogout = {
-          authViewModel.logout()
-          navController.navigate(Screen.Auth.route) {
-            popUpTo(0) { inclusive = true }
-          }
-        },
-        onFabClick = {
-            navController.navigate(Screen.Brands.route) {
-                popUpTo(0) { inclusive = true }
+    Crossfade(targetState = navigator.currentScreen) { currentScreen ->
+        when (currentScreen) {
+            is Screen.Auth -> {
+                AuthScreen(onOtpRequested = { phone ->
+                    navigator.navigate(Screen.Otp(phone))
+                })
             }
-        },
-        bottomBar = {
-            BottomNavBar(
-                selectedRoute = Screen.Brands.route,
-                onItemSelected = { screen ->
-                    if (screen == BottomNavScreen.Brand) {
-                        navController.navigate(Screen.Brands.route) {
-                            popUpTo(Screen.Brands.route) { inclusive = true }
-                        }
-                    } else {
-                        val defaultBrandId = viewModel.subscriptions.value.firstOrNull()?.company?.id?.toString() ?: ""
-                        if (defaultBrandId.isNotEmpty()) {
-                            navController.navigate(screen.route.replace("{brandId}", defaultBrandId))
-                        }
+            is Screen.Otp -> {
+                OtpScreen(
+                    phone = currentScreen.phone,
+                    onAuthenticated = {
+                        navigator.navigate(Screen.Brands, clearStack = true)
+                    },
+                    onBack = {
+                        navigator.popBackStack()
                     }
-                }
-            )
-        }
-      ) {
-        BrandsGrid(
-            subscriptionsState = subscriptions,
-                onBrandClick = { brand ->
-                    navController.navigate(Screen.Wallet.createRoute(brand.id.toString()))
-                },
-            onRetry = { viewModel.getSubscriptions() }
-        )
-      }
-    }
+                )
+            }
+            is Screen.Brands -> {
+                val viewModel = koinViewModel<BrandViewModel>(key = "global") { parametersOf("") }
+                val subscriptions by viewModel.subscriptionsState.collectAsState()
 
-    // Nested Brand Graph to share ViewModel/State
-    navigation(
-        startDestination = Screen.Wallet.route,
-        route = "brand_graph/{brandId}"
-    ) {
-        composable(Screen.BrandDetails.route) { backStackEntry ->
-            val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.BrandDetails.route)
-        }
-        composable(Screen.Wallet.route) { backStackEntry ->
-            val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.Wallet.route)
-        }
-        composable(Screen.History.route) { backStackEntry ->
-            val brandId = backStackEntry.arguments?.getString("brandId")
-            BrandContainer(brandId, navController, Screen.History.route)
+                LaunchedEffect(Unit) {
+                    viewModel.getSubscriptions()
+                }
+
+                MainScaffold(
+                    title = "ShopWallet",
+                    onLogout = {
+                        authViewModel.logout()
+                        navigator.navigate(Screen.Auth, clearStack = true)
+                    },
+                    onFabClick = {
+                        navigator.navigate(Screen.Brands, clearStack = true)
+                    },
+                    bottomBar = {
+                        BottomNavBar(
+                            selectedRoute = BottomNavScreen.Brand,
+                            onItemSelected = { screen ->
+                                if (screen == BottomNavScreen.Brand) {
+                                    navigator.navigate(Screen.Brands, clearStack = true)
+                                } else {
+                                    val defaultBrandId = viewModel.subscriptions.value.firstOrNull()?.company?.id?.toString() ?: ""
+                                    if (defaultBrandId.isNotEmpty()) {
+                                        when (screen) {
+                                            is BottomNavScreen.Wallet -> navigator.navigate(Screen.Wallet(defaultBrandId))
+                                            is BottomNavScreen.History -> navigator.navigate(Screen.History(defaultBrandId))
+                                            else -> {}
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    }
+                ) {
+                    BrandsGrid(
+                        subscriptionsState = subscriptions,
+                        onBrandClick = { brand ->
+                            navigator.navigate(Screen.Wallet(brand.id.toString()))
+                        },
+                        onRetry = { viewModel.getSubscriptions() }
+                    )
+                }
+            }
+            is Screen.BrandDetails -> {
+                BrandContainer(currentScreen.brandId, navigator, currentScreen)
+            }
+            is Screen.Wallet -> {
+                BrandContainer(currentScreen.brandId, navigator, currentScreen)
+            }
+            is Screen.History -> {
+                BrandContainer(currentScreen.brandId, navigator, currentScreen)
+            }
         }
     }
-  }
 }
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 fun BrandContainer(
     brandId: String?,
-    navController: NavHostController,
-    currentRoute: String,
+    navigator: AppNavigator,
+    currentScreen: Screen,
 ) {
-    // Get a global ViewModel to find the brand from subscriptions
     val globalViewModel = koinViewModel<BrandViewModel>(key = "global") { parametersOf("") }
     val subscriptions by globalViewModel.subscriptions.collectAsState()
     val subscriptionsState by globalViewModel.subscriptionsState.collectAsState()
-    
+
     val subscription = subscriptions.find { it.company.id.toString() == brandId }
-    
+
     LaunchedEffect(Unit) {
         if (subscriptions.isEmpty()) {
             globalViewModel.getSubscriptions()
         }
     }
-    
+
     if (subscription == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             if (subscriptionsState.isLoading) {
@@ -181,27 +142,24 @@ fun BrandContainer(
             } else if (subscriptionsState.error != null) {
                 Text(text = subscriptionsState.error ?: "Error loading subscriptions", color = MaterialTheme.colorScheme.error)
             } else if (!subscriptionsState.isLoading && subscriptions.isEmpty()) {
-                // If it's not loading and still empty after getSubscriptions, it might be an actual empty state
-                 Text("No subscriptions found")
+                Text("No subscriptions found")
             }
         }
         return
     }
-    
+
     val brand = subscription.company
-    
-    // Get the ViewModel scoped to this brandId
     val viewModel = koinViewModel<BrandViewModel>(key = brandId) { parametersOf(brandId) }
-    
+
     LaunchedEffect(subscription.id) {
         viewModel.loadWallet(subscription.id)
         viewModel.getTransactions(subscription.id)
     }
-    
+
     BrandMainScreen(
         brand = brand,
-        currentRoute = currentRoute,
-        navController = navController,
+        currentScreen = currentScreen,
+        navigator = navigator,
         viewModel = viewModel,
     )
 }

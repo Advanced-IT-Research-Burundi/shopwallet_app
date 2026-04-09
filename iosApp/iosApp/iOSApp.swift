@@ -1,17 +1,12 @@
 import SwiftUI
 import SharedWithYou
+import ComposeApp
 
 @main
 struct iOSApp: App {
     
     init() {
-        NotifierManager.shared.initialize(
-            configuration: NotificationPlatformConfigurationIos(
-                showPushNotification: true,
-                askNotificationPermissionOnStart: false,
-                notificationSoundName: nil
-            )
-        )
+        MainViewControllerKt.startKoinIOS()
     }
     
     var body: some Scene {

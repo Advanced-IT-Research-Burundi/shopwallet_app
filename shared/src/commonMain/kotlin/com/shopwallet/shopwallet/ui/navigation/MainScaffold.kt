@@ -186,7 +186,7 @@ fun MainScaffold(
 
 @Composable
 fun BottomNavBar(
-  selectedRoute: String?,
+  selectedRoute: BottomNavScreen?,
   onItemSelected: (BottomNavScreen) -> Unit
 ) {
     Surface(
@@ -207,7 +207,7 @@ fun BottomNavBar(
             // LEFT ELEMENT
             NavBarItem(
                 screen = BottomNavScreen.Wallet,
-                isSelected = selectedRoute?.contains("/wallet") == true,
+                isSelected = selectedRoute is BottomNavScreen.Wallet,
                 onClick = { onItemSelected(BottomNavScreen.Wallet) }
             )
 
@@ -217,7 +217,7 @@ fun BottomNavBar(
             // RIGHT ELEMENT
             NavBarItem(
                 screen = BottomNavScreen.History,
-                isSelected = selectedRoute?.contains("/history") == true,
+                isSelected = selectedRoute is BottomNavScreen.History,
                 onClick = { onItemSelected(BottomNavScreen.History) }
             )
         }
